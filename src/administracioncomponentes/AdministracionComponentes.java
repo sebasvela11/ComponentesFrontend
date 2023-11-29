@@ -5,6 +5,7 @@
  */
 package administracioncomponentes;
 
+import com.componentes.administracion.controllers.EmpleadoController;
 import com.componentes.ulatina.entitymanagerfactory.EntityManagerFactoryControlador;
 import com.componentes.ulatina.modelo.Empleado;
 import com.componentes.ulatina.servicio.ServicioEmpleado;
@@ -25,8 +26,8 @@ public class AdministracionComponentes {
         List<Empleado> listaEmpleados = new ArrayList<Empleado>();
         EntityManagerFactoryControlador e = new EntityManagerFactoryControlador();
         e.startEntityManagerFactory();
-        ServicioEmpleado se = new ServicioEmpleado();
-        listaEmpleados = se.listar(e.getEm());
+        EmpleadoController ec = new EmpleadoController();
+        listaEmpleados = ec.listar(e.getEm());
         for(Empleado empleado: listaEmpleados){
             System.out.println(empleado.getNombre() + " " + empleado.getApellidos());
         }
