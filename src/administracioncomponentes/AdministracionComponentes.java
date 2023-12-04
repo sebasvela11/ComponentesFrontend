@@ -8,10 +8,9 @@ package administracioncomponentes;
 import com.componentes.administracion.controllers.EmpleadoController;
 import com.componentes.ulatina.entitymanagerfactory.EntityManagerFactoryControlador;
 import com.componentes.ulatina.modelo.Empleado;
-import com.componentes.ulatina.servicio.ServicioEmpleado;
 import java.util.ArrayList;
+
 import java.util.List;
-import javax.persistence.EntityManager;
 
 /**
  *
