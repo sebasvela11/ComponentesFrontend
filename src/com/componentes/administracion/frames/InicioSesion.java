@@ -7,7 +7,6 @@ package com.componentes.administracion.frames;
 
 import com.componentes.administracion.controllers.EmpleadoController;
 import com.componentes.ulatina.modelo.Empleado;
-import com.componentes.ulatina.servicio.ServicioEmpleado;
 import javax.persistence.EntityManager;
 import javax.swing.JOptionPane;
 
@@ -21,7 +20,8 @@ public class InicioSesion extends javax.swing.JFrame {
     /**
      * Creates new form InicioSesion
      */
-    public InicioSesion() {
+    public InicioSesion(EntityManager em) {
+        this.em = em;
         initComponents();
     }
 
@@ -181,8 +181,7 @@ public class InicioSesion extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         Empleado empleado = empleadoController.validarUsuario(this.em, jTextField2.getText(), jPasswordField2.getText().toString());
         if(empleado.getId() != 0){
-            MenuPrincipal menuPrincipal = new MenuPrincipal();
-            menuPrincipal.setEm(this.em);
+            MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
             menuPrincipal.setEmpleadoConectado(empleado);
             this.setVisible(false);
             menuPrincipal.setVisible(true);
@@ -223,11 +222,7 @@ public class InicioSesion extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new InicioSesion().setVisible(true);
-            }
-        });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

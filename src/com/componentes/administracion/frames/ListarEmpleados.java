@@ -5,23 +5,61 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.EmpleadoController;
 import com.componentes.ulatina.modelo.Empleado;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author mateo
  */
 public class ListarEmpleados extends javax.swing.JFrame {
-
+    DefaultTableModel modeloTablaEmpleado = new DefaultTableModel();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
 
     /**
      * Creates new form ListarEmpleados
      */
-    public ListarEmpleados() {
+    public ListarEmpleados(EntityManager em) {
+        this.em = em;
         initComponents();
+        cargarTabla();
+    }
+
+    public void cargarTabla() {
+        ArrayList<Object> nombresColumna = new ArrayList<Object>();
+        ArrayList<Object[]> datos = new ArrayList<Object[]>();
+        List<Empleado> empleados = new ArrayList<Empleado>();
+        EmpleadoController empleadoController = new EmpleadoController();
+        
+        nombresColumna.add("Id");
+        nombresColumna.add("Nombre");
+        nombresColumna.add("Correo Emp.");
+        nombresColumna.add("Correo Per.");
+        nombresColumna.add("Telefono");
+        nombresColumna.add("Edad");
+        nombresColumna.add("Genero");
+        nombresColumna.add("Rol");
+        for(Object columna: nombresColumna){
+            modeloTablaEmpleado.addColumn(columna);
+        }
+        
+        this.jTable12.setModel(modeloTablaEmpleado);
+        empleados = empleadoController.listar(em);
+        for(Empleado empleado: empleados){
+            Object[] informacion = new Object[]{empleado.getId(),empleado.getNombre() + " " + empleado.getApellidos(),
+                empleado.getCorreoEmpresa(), empleado.getCorreoPersonal(), empleado.getNumeroTelefono(),
+                empleado.getEdad(), empleado.getGenero().getDescripcion(), empleado.getRol().getDescripcion()};
+            datos.add(informacion);
+        }
+        for(Object[] datosEmpleados: datos){
+            modeloTablaEmpleado.addRow(datosEmpleados);
+        }
+        this.jTable12.setModel(modeloTablaEmpleado);
     }
 
     public EntityManager getEm() {
@@ -124,7 +162,6 @@ public class ListarEmpleados extends javax.swing.JFrame {
             }
         });
 
-        jTable12.setForeground(new java.awt.Color(255, 255, 255));
         jTable12.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -287,33 +324,29 @@ public class ListarEmpleados extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton36ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        MenuPrincipal menuPrincipal = new MenuPrincipal();
+        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
         this.setVisible(false);
-        menuPrincipal.setEm(em);
         menuPrincipal.setEmpleadoConectado(empleadoConectado);
         menuPrincipal.setVisible(true);
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        ListarProyecto listarProyecto = new ListarProyecto();
+        ListarProyecto listarProyecto = new ListarProyecto(this.em);
         this.setVisible(false);
-        listarProyecto.setEm(em);
         listarProyecto.setEmpleadoConectado(empleadoConectado);
         listarProyecto.setVisible(true);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        ListarTareas listarTareas = new ListarTareas();
+        ListarTareas listarTareas = new ListarTareas(this.em);
         this.setVisible(false);
-        listarTareas.setEm(em);
         listarTareas.setEmpleadoConectado(empleadoConectado);
         listarTareas.setVisible(true);
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        InicioSesion incioSesion = new InicioSesion();
+        InicioSesion incioSesion = new InicioSesion(this.em);
         this.setVisible(false);
-        incioSesion.setEm(em);
         incioSesion.setVisible(true);
     }//GEN-LAST:event_jButton8ActionPerformed
 
@@ -349,11 +382,7 @@ public class ListarEmpleados extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ListarEmpleados().setVisible(true);
-            }
-        });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

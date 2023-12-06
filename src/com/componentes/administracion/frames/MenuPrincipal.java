@@ -19,7 +19,8 @@ public class MenuPrincipal extends javax.swing.JFrame {
     /**
      * Creates new form MenuPrincipal1
      */
-    public MenuPrincipal() {
+    public MenuPrincipal(EntityManager em) {
+        this.em = em;
         initComponents();
     }
 
@@ -208,33 +209,29 @@ public class MenuPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        ListarEmpleados listarEmpleados = new ListarEmpleados();
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em);
         this.setVisible(false);
-        listarEmpleados.setEm(em);
         listarEmpleados.setEmpleadoConectado(empleadoConectado);
         listarEmpleados.setVisible(true);
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        ListarProyecto listarProyecto = new ListarProyecto();
+        ListarProyecto listarProyecto = new ListarProyecto(this.em);
         this.setVisible(false);
-        listarProyecto.setEm(em);
         listarProyecto.setEmpleadoConectado(empleadoConectado);
         listarProyecto.setVisible(true);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        ListarTareas listarTareas = new ListarTareas();
+        ListarTareas listarTareas = new ListarTareas(this.em);
         this.setVisible(false);
-        listarTareas.setEm(em);
         listarTareas.setEmpleadoConectado(empleadoConectado);
         listarTareas.setVisible(true);
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        InicioSesion incioSesion = new InicioSesion();
+        InicioSesion incioSesion = new InicioSesion(this.em);
         this.setVisible(false);
-        incioSesion.setEm(em);
         incioSesion.setVisible(true);
     }//GEN-LAST:event_jButton8ActionPerformed
 
@@ -267,11 +264,7 @@ public class MenuPrincipal extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MenuPrincipal().setVisible(true);
-            }
-        });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

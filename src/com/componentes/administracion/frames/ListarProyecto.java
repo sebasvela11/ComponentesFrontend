@@ -5,23 +5,60 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.ProyectoController;
 import com.componentes.ulatina.modelo.Empleado;
+import com.componentes.ulatina.modelo.Proyecto;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author mateo
  */
 public class ListarProyecto extends javax.swing.JFrame {
-
+    DefaultTableModel modeloTablaProyecto = new DefaultTableModel();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
 
     /**
      * Creates new form ListarProyecto
      */
-    public ListarProyecto() {
+    public ListarProyecto(EntityManager em) {
+        this.em = em;
         initComponents();
+        cargarTabla();
+    }
+    
+    public void cargarTabla() {
+        ArrayList<Object> nombresColumna = new ArrayList<Object>();
+        ArrayList<Object[]> datos = new ArrayList<Object[]>();
+        List<Proyecto> proyectos = new ArrayList<Proyecto>();
+        ProyectoController proyectoController = new ProyectoController();
+        
+        nombresColumna.add("Id");
+        nombresColumna.add("Nombre");
+        nombresColumna.add("Descripcion");
+        nombresColumna.add("Fecha Inicio");
+        nombresColumna.add("Fecha Final");
+        nombresColumna.add("Estado");
+        for(Object columna: nombresColumna){
+            modeloTablaProyecto.addColumn(columna);
+        }
+        
+        this.jTable13.setModel(modeloTablaProyecto);
+        proyectos = proyectoController.listar(em);
+        for(Proyecto proyecto: proyectos){
+            Object[] informacion = new Object[]{proyecto.getId(),proyecto.getNombre(),
+                proyecto.getDescripcion(), proyecto.getFechaInicio(),proyecto.getFechaFinal(),
+                proyecto.getEstado().getDescripcion()};
+            datos.add(informacion);
+        }
+        for(Object[] datosEmpleados: datos){
+            modeloTablaProyecto.addRow(datosEmpleados);
+        }
+        this.jTable13.setModel(modeloTablaProyecto);
     }
 
     public EntityManager getEm() {
@@ -290,7 +327,6 @@ public class ListarProyecto extends javax.swing.JFrame {
                 .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        jTable13.setForeground(new java.awt.Color(255, 255, 255));
         jTable13.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -441,25 +477,22 @@ public class ListarProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton36ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        MenuPrincipal menuPrincipal = new MenuPrincipal();
+        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
         this.setVisible(false);
-        menuPrincipal.setEm(em);
         menuPrincipal.setEmpleadoConectado(empleadoConectado);
         menuPrincipal.setVisible(true);
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        ListarEmpleados listarEmpleados = new ListarEmpleados();
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em);
         this.setVisible(false);
-        listarEmpleados.setEm(em);
         listarEmpleados.setEmpleadoConectado(empleadoConectado);
         listarEmpleados.setVisible(true);
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        ListarTareas listarTareas = new ListarTareas();
+        ListarTareas listarTareas = new ListarTareas(this.em);
         this.setVisible(false);
-        listarTareas.setEm(em);
         listarTareas.setEmpleadoConectado(empleadoConectado);
         listarTareas.setVisible(true);
     }//GEN-LAST:event_jButton11ActionPerformed
@@ -508,11 +541,7 @@ public class ListarProyecto extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ListarProyecto().setVisible(true);
-            }
-        });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

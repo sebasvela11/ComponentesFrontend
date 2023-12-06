@@ -8,8 +8,7 @@ public class main {
     public static void main(String[] args) throws Exception {
         EntityManagerFactoryControlador e = new EntityManagerFactoryControlador();
         e.startEntityManagerFactory();
-        InicioSesion iniciarSesion = new InicioSesion();
-        iniciarSesion.setEm(e.getEm());
+        InicioSesion iniciarSesion = new InicioSesion(e.getEm());
         iniciarSesion.setVisible(true);
     }
     
