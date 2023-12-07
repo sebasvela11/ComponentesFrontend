@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
  * @author mateo
  */
 public class ListarProyecto extends javax.swing.JFrame {
+
     DefaultTableModel modeloTablaProyecto = new DefaultTableModel();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
@@ -30,35 +32,38 @@ public class ListarProyecto extends javax.swing.JFrame {
         initComponents();
         cargarTabla();
     }
-    
+
     public void cargarTabla() {
         ArrayList<Object> nombresColumna = new ArrayList<Object>();
         ArrayList<Object[]> datos = new ArrayList<Object[]>();
         List<Proyecto> proyectos = new ArrayList<Proyecto>();
         ProyectoController proyectoController = new ProyectoController();
-        
+
         nombresColumna.add("Id");
         nombresColumna.add("Nombre");
         nombresColumna.add("Descripcion");
         nombresColumna.add("Fecha Inicio");
         nombresColumna.add("Fecha Final");
         nombresColumna.add("Estado");
-        for(Object columna: nombresColumna){
+        for (Object columna : nombresColumna) {
             modeloTablaProyecto.addColumn(columna);
         }
-        
+
         this.jTable13.setModel(modeloTablaProyecto);
         proyectos = proyectoController.listar(em);
-        for(Proyecto proyecto: proyectos){
-            Object[] informacion = new Object[]{proyecto.getId(),proyecto.getNombre(),
-                proyecto.getDescripcion(), proyecto.getFechaInicio(),proyecto.getFechaFinal(),
+        for (Proyecto proyecto : proyectos) {
+            Object[] informacion = new Object[]{proyecto.getId(), proyecto.getNombre(),
+                proyecto.getDescripcion(), proyecto.getFechaInicio(), proyecto.getFechaFinal(),
                 proyecto.getEstado().getDescripcion()};
             datos.add(informacion);
         }
-        for(Object[] datosEmpleados: datos){
+        for (Object[] datosEmpleados : datos) {
             modeloTablaProyecto.addRow(datosEmpleados);
         }
+        TableColumnModel columnModel = jTable13.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(2);
         this.jTable13.setModel(modeloTablaProyecto);
+
     }
 
     public EntityManager getEm() {
@@ -336,6 +341,7 @@ public class ListarProyecto extends javax.swing.JFrame {
             }
         ));
         jTable13.setGridColor(new java.awt.Color(255, 255, 255));
+        jTable13.setRowHeight(50);
         jScrollPane13.setViewportView(jTable13);
 
         jButton39.setBackground(new java.awt.Color(255, 255, 255));
@@ -541,7 +547,6 @@ public class ListarProyecto extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

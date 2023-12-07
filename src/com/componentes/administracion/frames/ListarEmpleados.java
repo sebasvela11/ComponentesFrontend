@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -31,36 +32,47 @@ public class ListarEmpleados extends javax.swing.JFrame {
     }
 
     public void cargarTabla() {
-        ArrayList<Object> nombresColumna = new ArrayList<Object>();
-        ArrayList<Object[]> datos = new ArrayList<Object[]>();
-        List<Empleado> empleados = new ArrayList<Empleado>();
-        EmpleadoController empleadoController = new EmpleadoController();
-        
-        nombresColumna.add("Id");
-        nombresColumna.add("Nombre");
-        nombresColumna.add("Correo Emp.");
-        nombresColumna.add("Correo Per.");
-        nombresColumna.add("Telefono");
-        nombresColumna.add("Edad");
-        nombresColumna.add("Genero");
-        nombresColumna.add("Rol");
-        for(Object columna: nombresColumna){
-            modeloTablaEmpleado.addColumn(columna);
-        }
-        
-        this.jTable12.setModel(modeloTablaEmpleado);
-        empleados = empleadoController.listar(em);
-        for(Empleado empleado: empleados){
-            Object[] informacion = new Object[]{empleado.getId(),empleado.getNombre() + " " + empleado.getApellidos(),
-                empleado.getCorreoEmpresa(), empleado.getCorreoPersonal(), empleado.getNumeroTelefono(),
-                empleado.getEdad(), empleado.getGenero().getDescripcion(), empleado.getRol().getDescripcion()};
-            datos.add(informacion);
-        }
-        for(Object[] datosEmpleados: datos){
-            modeloTablaEmpleado.addRow(datosEmpleados);
-        }
-        this.jTable12.setModel(modeloTablaEmpleado);
+    ArrayList<Object> nombresColumna = new ArrayList<Object>();
+    ArrayList<Object[]> datos = new ArrayList<Object[]>();
+    List<Empleado> empleados = new ArrayList<Empleado>();
+    EmpleadoController empleadoController = new EmpleadoController();
+    
+    nombresColumna.add("Id");
+    nombresColumna.add("Nombre");
+    nombresColumna.add("Correo Emp.");
+    nombresColumna.add("Correo Per.");
+    nombresColumna.add("Telefono");
+    nombresColumna.add("Edad");
+    nombresColumna.add("Genero");
+    nombresColumna.add("Rol");
+    for(Object columna: nombresColumna){
+        modeloTablaEmpleado.addColumn(columna);
     }
+    
+    this.jTable12.setModel(modeloTablaEmpleado);
+    empleados = empleadoController.listar(em);
+    for(Empleado empleado: empleados){
+        Object[] informacion = new Object[]{empleado.getId(),empleado.getNombre() + " " + empleado.getApellidos(),
+            empleado.getCorreoEmpresa(), empleado.getCorreoPersonal(), empleado.getNumeroTelefono(),
+            empleado.getEdad(), empleado.getGenero().getDescripcion(), empleado.getRol().getDescripcion()};
+        datos.add(informacion);
+    }
+    for(Object[] datosEmpleados: datos){
+        modeloTablaEmpleado.addRow(datosEmpleados);
+    }
+
+    TableColumnModel columnModel = jTable12.getColumnModel();
+    columnModel.getColumn(0).setPreferredWidth(2); 
+    columnModel.getColumn(1).setPreferredWidth(100); 
+    columnModel.getColumn(2).setPreferredWidth(120); 
+    columnModel.getColumn(4).setPreferredWidth(50); 
+    columnModel.getColumn(5).setPreferredWidth(30); 
+    columnModel.getColumn(6).setPreferredWidth(30); 
+    columnModel.getColumn(7).setPreferredWidth(50);
+
+    this.jTable12.setModel(modeloTablaEmpleado);
+}
+
 
     public EntityManager getEm() {
         return em;
@@ -171,6 +183,7 @@ public class ListarEmpleados extends javax.swing.JFrame {
             }
         ));
         jTable12.setGridColor(new java.awt.Color(255, 255, 255));
+        jTable12.setRowHeight(50);
         jScrollPane12.setViewportView(jTable12);
 
         jPanel4.setBackground(new java.awt.Color(204, 204, 204));

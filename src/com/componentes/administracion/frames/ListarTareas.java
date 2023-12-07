@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -60,6 +61,10 @@ public class ListarTareas extends javax.swing.JFrame {
         for(Object[] datosEmpleados: datos){
             modeloTablaTarea.addRow(datosEmpleados);
         }
+        TableColumnModel columnModel = jTable13.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(2);
+        columnModel.getColumn(2).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
         this.jTable13.setModel(modeloTablaTarea);
     }
 
@@ -203,6 +208,7 @@ public class ListarTareas extends javax.swing.JFrame {
             }
         ));
         jTable13.setGridColor(new java.awt.Color(255, 255, 255));
+        jTable13.setRowHeight(50);
         jScrollPane13.setViewportView(jTable13);
 
         jButton39.setBackground(new java.awt.Color(255, 255, 255));

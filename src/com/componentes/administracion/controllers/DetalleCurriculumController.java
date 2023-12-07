@@ -1,5 +1,6 @@
 package com.componentes.administracion.controllers;
 
+import com.componentes.ulatina.modelo.Curriculum;
 import com.componentes.ulatina.modelo.Detalle;
 import com.componentes.ulatina.modelo.DetalleCurriculum;
 import com.componentes.ulatina.modelo.Empleado;
@@ -79,11 +80,11 @@ public class DetalleCurriculumController implements Serializable {
         return detallesCurriculum;
     }
 
-    public List<DetalleCurriculum> listarPorEmpleado(EntityManager em, Empleado empleado) {
+    public List<DetalleCurriculum> listarPorEmpleado(EntityManager em, Curriculum curriculum) {
         List<DetalleCurriculum> detallesCurriculum = new ArrayList<DetalleCurriculum>();
         try {
-            if(empleado != null){
-                detallesCurriculum = sevicioDetalleCurriculum.listarPorEmpleado(em, empleado);
+            if(curriculum != null){
+                detallesCurriculum = sevicioDetalleCurriculum.listarPorCurriculum(em, curriculum);
                 if(detallesCurriculum != null && !detallesCurriculum.isEmpty()){
                     throw new Exception("ERROR - Detalles curriculum no ecnotrados");
                 }
@@ -96,11 +97,11 @@ public class DetalleCurriculumController implements Serializable {
         return detallesCurriculum;
     }
 
-    public List<DetalleCurriculum> listarPorTipoEmpleado(EntityManager em, Empleado empleado, Detalle detalle) {
+    public List<DetalleCurriculum> listarPorTipoEmpleado(EntityManager em, Curriculum curriculum, Detalle detalle) {
         List<DetalleCurriculum> detallesCurriculum = new ArrayList<DetalleCurriculum>();
         try {
-            if(empleado != null && detalle != null){
-                detallesCurriculum = sevicioDetalleCurriculum.listarPorTipoEmpleado(em, empleado, detalle);
+            if(curriculum != null && detalle != null){
+                detallesCurriculum = sevicioDetalleCurriculum.listarPorTipoCurriculum(em, curriculum, detalle);
                 if(detallesCurriculum != null && !detallesCurriculum.isEmpty()){
                     throw new Exception("ERROR - Detalles curriculum no ecnotrados");
                 }
