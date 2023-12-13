@@ -440,11 +440,22 @@ public class ListarTareas extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton12ActionPerformed
 
     private void jButton39ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton39ActionPerformed
-        // TODO add your handling code here:
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaTarea.getValueAt(this.jTable13.getSelectedRow(), 0)));
+            TareaProyecto tareaProyecto = tareaProyectoController.tareaProyectoPorId(em, id);
+            CrearTarea crearTarea = new CrearTarea(this.em,this.empleadoConectado, tareaProyecto, true);
+            this.setVisible(false);
+            crearTarea.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
+
     }//GEN-LAST:event_jButton39ActionPerformed
 
     private void jButton40ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton40ActionPerformed
-        // TODO add your handling code here:
+        CrearTarea crearTarea = new CrearTarea(this.em,this.empleadoConectado, new TareaProyecto(), false);
+        this.setVisible(false);
+        crearTarea.setVisible(true);
     }//GEN-LAST:event_jButton40ActionPerformed
 
     private void jButton41ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton41ActionPerformed

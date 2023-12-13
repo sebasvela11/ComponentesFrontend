@@ -121,7 +121,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("Crear Detalle Curriculum");
+        jLabel2.setText("Crear Curriculum");
 
         jPanel10.setBackground(new java.awt.Color(255, 255, 255));
 

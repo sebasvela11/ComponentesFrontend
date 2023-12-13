@@ -5,17 +5,168 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.DetalleController;
+import com.componentes.administracion.controllers.EmpleadoController;
+import com.componentes.administracion.controllers.MaestroController;
+import com.componentes.administracion.controllers.ProyectoController;
+import com.componentes.administracion.controllers.TareaProyectoController;
+import com.componentes.ulatina.modelo.Detalle;
+import com.componentes.ulatina.modelo.Empleado;
+import com.componentes.ulatina.modelo.Maestro;
+import com.componentes.ulatina.modelo.Proyecto;
+import com.componentes.ulatina.modelo.TareaProyecto;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Cultisof
  */
 public class CrearTarea extends javax.swing.JFrame {
 
+    boolean editando;
+    Empleado empleadoConectado = new Empleado();
+    TareaProyecto tareaProyecto = new TareaProyecto();
+    TareaProyectoController tareaProyectoController = new TareaProyectoController();
+    EmpleadoController empleadoController = new EmpleadoController();
+    ProyectoController proyectoController = new ProyectoController();
+    DetalleController detalleController = new DetalleController();
+    MaestroController mestroController = new MaestroController();
+    EntityManager em;
+    List<Empleado> empleados = new ArrayList<Empleado>();
+    List<Proyecto> proyectos = new ArrayList<Proyecto>();
+    List<Detalle> estados = new ArrayList<Detalle>();
+    List<Detalle> tipos = new ArrayList<Detalle>();
+
     /**
      * Creates new form CrearTarea
      */
-    public CrearTarea() {
+    public CrearTarea(EntityManager em, Empleado empleado, TareaProyecto tareaProyecto, boolean editando) {
+        this.editando = editando;
+        this.em = em;
+        this.empleadoConectado = empleado;
+        this.tareaProyecto = tareaProyecto;
         initComponents();
+        this.validarAccion();
+        this.cargarOpciones();
+        this.cargarDatos();
+
+    }
+
+    public void validarAccion() {
+        if (editando) {
+            this.jLabel1.setText("Editar Tarea");
+            this.jButton5.setText("Guardar");
+        }
+    }
+
+    public void cargarOpciones() {
+        empleados = this.empleadoController.listar(em);
+        proyectos = this.proyectoController.listar(em);
+        Maestro estado = new Maestro();
+        Maestro tipo = new Maestro();
+        estado = this.mestroController.maestroPorCodigoGeneral(em, "ESTADO_TAREA");
+        tipo = this.mestroController.maestroPorCodigoGeneral(em, "TIPO_TAREA_PROYECTO");
+        estados = this.detalleController.listarPorMaestro(em, estado);
+        tipos = this.detalleController.listarPorMaestro(em, tipo);
+
+        for (Empleado empleado : empleados) {
+            this.empleadoTxt.addItem(empleado.getCorreoEmpresa());
+        }
+        for (Proyecto proyecto : proyectos) {
+            this.proyectoTxt.addItem(proyecto.getNombre());
+        }
+        for (Detalle detalle : estados) {
+            this.estadoTxt.addItem(detalle.getDescripcion());
+        }
+        for (Detalle detalle : tipos) {
+            this.tipoTxt.addItem(detalle.getDescripcion());
+        }
+    }
+
+    public void cargarDatos() {
+        if (editando) {
+            this.tituloTarea.setText(this.tareaProyecto.getTituloTarea());
+
+            for (int i = 0; i < this.empleadoTxt.getItemCount(); i++) {
+                if (this.empleadoTxt.getItemAt(i).equals(this.tareaProyecto.getEmpleado().getCorreoEmpresa())) {
+                    this.empleadoTxt.setSelectedIndex(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < this.proyectoTxt.getItemCount(); i++) {
+                if (this.proyectoTxt.getItemAt(i).equals(this.tareaProyecto.getProyecto().getNombre())) {
+                    this.proyectoTxt.setSelectedIndex(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < this.tipoTxt.getItemCount(); i++) {
+                if (this.tipoTxt.getItemAt(i).equals(this.tareaProyecto.getTipoTarea().getDescripcion())) {
+                    this.tipoTxt.setSelectedIndex(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < this.estadoTxt.getItemCount(); i++) {
+                if (this.estadoTxt.getItemAt(i).equals(this.tareaProyecto.getEstado().getDescripcion())) {
+                    this.estadoTxt.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void guardarCambios() {
+        this.tareaProyecto.setTituloTarea(this.tituloTarea.getText());
+        for (Empleado empleado : empleados) {
+            if (empleado.getCorreoEmpresa().equals(this.empleadoTxt.getSelectedItem().toString())) {
+                this.tareaProyecto.setEmpleado(empleado);
+            }
+        }
+        for (Proyecto proyecto : proyectos) {
+            if (proyecto.getNombre().equals(this.proyectoTxt.getSelectedItem().toString())) {
+                this.tareaProyecto.setProyecto(proyecto);
+            }
+        }
+        for (Detalle detalle : estados) {
+            if (detalle.getDescripcion().equals(this.estadoTxt.getSelectedItem().toString())) {
+                this.tareaProyecto.setEstado(detalle);
+            }
+        }
+        for (Detalle detalle : tipos) {
+            if (detalle.getDescripcion().equals(this.tipoTxt.getSelectedItem().toString())) {
+                this.tareaProyecto.setTipoTarea(detalle);
+            }
+        }
+    }
+
+    public TareaProyecto guardarCampos() {
+        TareaProyecto tareaProyecto = new TareaProyecto();
+        tareaProyecto.setTituloTarea(this.tituloTarea.getText());
+        tareaProyecto.setTiempoInvertido(0.0);
+        for (Empleado empleado : empleados) {
+            if (empleado.getCorreoEmpresa().equals(this.empleadoTxt.getSelectedItem().toString())) {
+                tareaProyecto.setEmpleado(empleado);
+            }
+        }
+        for (Proyecto proyecto : proyectos) {
+            if (proyecto.getNombre().equals(this.proyectoTxt.getSelectedItem().toString())) {
+                tareaProyecto.setProyecto(proyecto);
+            }
+        }
+        for (Detalle detalle : estados) {
+            if (detalle.getDescripcion().equals(this.estadoTxt.getSelectedItem().toString())) {
+                tareaProyecto.setEstado(detalle);
+            }
+        }
+        for (Detalle detalle : tipos) {
+            if (detalle.getDescripcion().equals(this.tipoTxt.getSelectedItem().toString())) {
+                tareaProyecto.setTipoTarea(detalle);
+            }
+        }
+        return tareaProyecto;
     }
 
     /**
@@ -47,14 +198,15 @@ public class CrearTarea extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jPasswordField5 = new javax.swing.JPasswordField();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jComboBox3 = new javax.swing.JComboBox<>();
-        jComboBox4 = new javax.swing.JComboBox<>();
+        empleadoTxt = new javax.swing.JComboBox<>();
+        estadoTxt = new javax.swing.JComboBox<>();
+        proyectoTxt = new javax.swing.JComboBox<>();
+        tipoTxt = new javax.swing.JComboBox<>();
+        tituloTarea = new javax.swing.JTextField();
+        jButton6 = new javax.swing.JButton();
 
         jPasswordField7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -154,12 +306,6 @@ public class CrearTarea extends javax.swing.JFrame {
         jLabel10.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel10.setText("Empleado");
 
-        jPasswordField5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField5ActionPerformed(evt);
-            }
-        });
-
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel11.setText("Estado");
 
@@ -169,15 +315,34 @@ public class CrearTarea extends javax.swing.JFrame {
         jLabel14.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel14.setText("Tipo Tarea");
 
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+        empleadoTxt.setEditable(true);
+        empleadoTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
+                empleadoTxtActionPerformed(evt);
             }
         });
 
-        jComboBox4.addActionListener(new java.awt.event.ActionListener() {
+        estadoTxt.setEditable(true);
+
+        proyectoTxt.setEditable(true);
+
+        tipoTxt.setEditable(true);
+        tipoTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox4ActionPerformed(evt);
+                tipoTxtActionPerformed(evt);
+            }
+        });
+
+        jButton6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jButton6.setText("Regresar");
+        jButton6.setAlignmentX(2.0F);
+        jButton6.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.white, java.awt.Color.white));
+        jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jButton6.setMargin(new java.awt.Insets(140, 140, 140, 140));
+        jButton6.setPreferredSize(new java.awt.Dimension(80, 30));
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
             }
         });
 
@@ -192,43 +357,46 @@ public class CrearTarea extends javax.swing.JFrame {
                     .addComponent(jLabel11)
                     .addComponent(jLabel12)
                     .addComponent(jLabel10)
-                    .addComponent(jLabel9))
-                .addGap(29, 29, 29)
+                    .addComponent(jLabel9)
+                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPasswordField5)
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboBox4, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))
+                    .addComponent(empleadoTxt, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(estadoTxt, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(proyectoTxt, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tipoTxt, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                    .addComponent(tituloTarea))
                 .addContainerGap(51, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPasswordField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tituloTarea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(19, 19, 19)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(empleadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(estadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(21, 21, 21)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12)
-                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(proyectoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(22, 22, 22)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(37, 37, 37)
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                    .addComponent(tipoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -239,9 +407,7 @@ public class CrearTarea extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -250,23 +416,24 @@ public class CrearTarea extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(296, 296, 296))
+                .addGap(314, 314, 314))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 344, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jPasswordField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField2ActionPerformed
@@ -278,16 +445,33 @@ public class CrearTarea extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        
+        ListarTareas listarTareas = new ListarTareas(this.em, this.empleadoConectado);
+        if (editando) {
+            if (!this.tituloTarea.getText().isEmpty()) {
+                this.guardarCambios();
+                this.tareaProyectoController.modificar(em, this.tareaProyecto);
+                JOptionPane.showMessageDialog(null, "Se han guardado los cambios.");
+            } else {
+                JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
+            }
+        } else {
+            if (!this.tituloTarea.getText().isEmpty()) {
+                this.tareaProyectoController.insertar(em, this.guardarCampos());
+                JOptionPane.showMessageDialog(null, "Se ha guardado la tarea.");
+            } else {
+                JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
+            }
+        }
+        listarTareas.modeloTablaTarea = new DefaultTableModel();
+        listarTareas.cargarTabla();
+        listarTareas.setVisible(true);
+        this.dispose();
+
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jPasswordField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField4ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jPasswordField4ActionPerformed
-
-    private void jPasswordField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField5ActionPerformed
 
     private void jPasswordField6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField6ActionPerformed
         // TODO add your handling code here:
@@ -313,55 +497,31 @@ public class CrearTarea extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField5ActionPerformed
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+    private void empleadoTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_empleadoTxtActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+    }//GEN-LAST:event_empleadoTxtActionPerformed
 
-    private void jComboBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox4ActionPerformed
+    private void tipoTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoTxtActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox4ActionPerformed
+    }//GEN-LAST:event_tipoTxtActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        ListarTareas listarTareas = new ListarTareas(this.em, this.empleadoConectado);
+        listarTareas.modeloTablaTarea = new DefaultTableModel();
+        listarTareas.cargarTabla();
+        listarTareas.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton6ActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CrearTarea.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CrearTarea.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CrearTarea.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CrearTarea.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CrearTarea().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> empleadoTxt;
+    private javax.swing.JComboBox<String> estadoTxt;
     private javax.swing.JButton jButton5;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private javax.swing.JComboBox<String> jComboBox4;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -377,7 +537,6 @@ public class CrearTarea extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPasswordField jPasswordField2;
     private javax.swing.JPasswordField jPasswordField4;
-    private javax.swing.JPasswordField jPasswordField5;
     private javax.swing.JPasswordField jPasswordField6;
     private javax.swing.JPasswordField jPasswordField7;
     private javax.swing.JPasswordField jPasswordField8;
@@ -385,5 +544,8 @@ public class CrearTarea extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
+    private javax.swing.JComboBox<String> proyectoTxt;
+    private javax.swing.JComboBox<String> tipoTxt;
+    private javax.swing.JTextField tituloTarea;
     // End of variables declaration//GEN-END:variables
 }
