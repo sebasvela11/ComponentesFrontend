@@ -206,6 +206,8 @@ public class CrearEmpleados extends javax.swing.JFrame {
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel6.setText("Días Laborales");
 
+        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0, null, 7, 1));
+
         jLabel7.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel7.setText("Hora Entrada");
 
