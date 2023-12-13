@@ -453,6 +453,7 @@ public class CrearTarea extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Se han guardado los cambios.");
             } else {
                 JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
+                return;
             }
         } else {
             if (!this.tituloTarea.getText().isEmpty()) {
@@ -460,6 +461,7 @@ public class CrearTarea extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Se ha guardado la tarea.");
             } else {
                 JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
+                return;
             }
         }
         listarTareas.modeloTablaTarea = new DefaultTableModel();
