@@ -25,6 +25,18 @@ public class HorarioController implements Serializable {
             e.printStackTrace();
         }
     }
+    
+    public void modificar(EntityManager em, Horario horario) {
+        try {
+            if (horario != null) {
+                servicioHorario.modificar(em, horario);
+            } else {
+                throw new Exception("ERROR - Horario llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public List<Horario> listar(EntityManager em) {
         List<Horario> horarios = new ArrayList<Horario>();
@@ -42,7 +54,7 @@ public class HorarioController implements Serializable {
     public Horario horarioPorId(EntityManager em, Integer id) {
         Horario horario = new Horario();
         try {
-            if (id != 0 && id < 0) {
+            if (id != 0 && id > 0) {
                 horario = servicioHorario.horarioPorId(em, id);
                 if (horario == null) {
                     throw new Exception("ERROR - Horario no encontrado");
@@ -59,13 +71,13 @@ public class HorarioController implements Serializable {
     public Horario horarioPorEmpleado(EntityManager em, Integer empleado) {
         Horario horario = new Horario();
         try {
-            if (empleado != 0 && empleado < 0) {
+            if (empleado != 0 && empleado > 0) {
                 horario = servicioHorario.horarioPorEmpleado(em, empleado);
                 if (horario == null) {
                     throw new Exception("ERROR - Horario no encontrado");
                 }
             } else {
-                throw new Exception("ERROR - Id no valido");
+                throw new Exception("ERROR - empleado no valido");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,7 +88,7 @@ public class HorarioController implements Serializable {
     public Horario horarioPorIdEmpleado(EntityManager em, Integer id, Integer empleado) {
         Horario horario = new Horario();
         try {
-            if (empleado != 0 && empleado < 0 && empleado != 0 && empleado < 0) {
+            if (empleado != 0 && empleado > 0 && empleado != 0 && empleado > 0) {
                 horario = servicioHorario.horarioPorIdEmpleado(em, id, empleado);
                 if (horario == null) {
                     throw new Exception("ERROR - Horario no encontrado");

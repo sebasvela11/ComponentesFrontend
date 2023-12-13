@@ -37,11 +37,23 @@ public class TareaProyectoController implements Serializable{
             e.printStackTrace();
         }
     }
+    
+    public void modificar(EntityManager em, TareaProyecto tareaProyecto) {
+        try {
+            if (tareaProyecto != null) {
+                servicioTareaProyecto.modificar(em, tareaProyecto);
+            } else {
+                throw new Exception("ERROR - Tarea proyecto llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-    public TareaProyecto tereaProyectoPorId(EntityManager em, int id) {
+    public TareaProyecto tareaProyectoPorId(EntityManager em, int id) {
         TareaProyecto tareaProyecto = new TareaProyecto();
         try {
-            if (id != 0 && id < 0) {
+            if (id != 0 && id > 0) {
                 tareaProyecto = servicioTareaProyecto.tereaProyectoPorId(em, id);
                 if (tareaProyecto == null) {
                     throw new Exception("ERROR - Tarea proyecto llegó nulo");
@@ -59,7 +71,7 @@ public class TareaProyectoController implements Serializable{
         List<TareaProyecto> tareasProyecto = new ArrayList<TareaProyecto>();
         try {
             tareasProyecto = servicioTareaProyecto.listar(em);
-            if (tareasProyecto == null && !tareasProyecto.isEmpty()) {
+            if (tareasProyecto == null && tareasProyecto.isEmpty()) {
                 throw new Exception("ERROR - Tareas proyecto no ecnotrados");
             }
         } catch (Exception e) {
@@ -73,7 +85,7 @@ public class TareaProyectoController implements Serializable{
         try {
             if(proyecto != null){
                 tareasProyecto = servicioTareaProyecto.listarPorProyecto(em, proyecto);
-                if(tareasProyecto != null && !tareasProyecto.isEmpty()){
+                if(tareasProyecto == null && tareasProyecto.isEmpty()){
                     throw new Exception("ERROR - Tareas proyecto no ecnotrados");
                 }
             }else{
@@ -90,7 +102,7 @@ public class TareaProyectoController implements Serializable{
         try {
             if(empleado != null){
                 tareasProyecto = servicioTareaProyecto.listarPorEmpleado(em, empleado);
-                if(tareasProyecto != null && !tareasProyecto.isEmpty()){
+                if(tareasProyecto == null && tareasProyecto.isEmpty()){
                     throw new Exception("ERROR - Tareas proyecto no ecnotrados");
                 }
             }else{
@@ -107,7 +119,7 @@ public class TareaProyectoController implements Serializable{
         try {
             if(empleado != null){
                 tareasProyecto = servicioTareaProyecto.listarPorEmpleadoProyecto(em, empleado, proyecto);
-                if(tareasProyecto != null && !tareasProyecto.isEmpty()){
+                if(tareasProyecto == null && tareasProyecto.isEmpty()){
                     throw new Exception("ERROR - Tareas proyecto no ecnotrados");
                 }
             }else{
@@ -124,7 +136,7 @@ public class TareaProyectoController implements Serializable{
         try {
             if(detalle != null){
                 tareasProyecto = servicioTareaProyecto.listarPorTipo(em, detalle);
-                if(tareasProyecto != null && !tareasProyecto.isEmpty()){
+                if(tareasProyecto == null && tareasProyecto.isEmpty()){
                     throw new Exception("ERROR - Tareas proyecto no ecnotrados");
                 }
             }else{

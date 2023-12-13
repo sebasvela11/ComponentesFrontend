@@ -32,6 +32,18 @@ public class DetalleCurriculumController implements Serializable {
             e.printStackTrace();
         }
     }
+    
+    public void modificar(EntityManager em, DetalleCurriculum detalleCurriculum) {
+        try {
+            if (detalleCurriculum != null) {
+                sevicioDetalleCurriculum.modificar(em, detalleCurriculum);
+            } else {
+                throw new Exception("ERROR - Detalle curriculum llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public DetalleCurriculum detalleCurriculumPorId(EntityManager em, int id) {
         DetalleCurriculum detalleCurriculum = new DetalleCurriculum();

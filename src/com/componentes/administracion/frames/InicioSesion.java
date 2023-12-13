@@ -184,7 +184,7 @@ public class InicioSesion extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         Empleado empleado = empleadoController.validarUsuario(this.em, jTextField2.getText(), jPasswordField2.getText().toString());
         if(empleado.getId() != 0){
-            MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
+            MenuPrincipal menuPrincipal = new MenuPrincipal(this.em, empleado);
             menuPrincipal.setEmpleadoConectado(empleado);
             this.setVisible(false);
             menuPrincipal.setVisible(true);

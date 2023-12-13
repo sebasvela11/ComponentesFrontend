@@ -10,6 +10,7 @@ import com.componentes.ulatina.modelo.Empleado;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -19,62 +20,82 @@ import javax.swing.table.TableColumnModel;
  * @author mateo
  */
 public class ListarEmpleados extends javax.swing.JFrame {
+
     DefaultTableModel modeloTablaEmpleado = new DefaultTableModel();
+    EmpleadoController empleadoController = new EmpleadoController();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
 
     /**
      * Creates new form ListarEmpleados
      */
-    public ListarEmpleados(EntityManager em) {
+    public ListarEmpleados(EntityManager em, Empleado empleado) {
         this.em = em;
+        this.empleadoConectado = empleado;
         initComponents();
         cargarTabla();
     }
 
     public void cargarTabla() {
-    ArrayList<Object> nombresColumna = new ArrayList<Object>();
-    ArrayList<Object[]> datos = new ArrayList<Object[]>();
-    List<Empleado> empleados = new ArrayList<Empleado>();
-    EmpleadoController empleadoController = new EmpleadoController();
-    
-    nombresColumna.add("Id");
-    nombresColumna.add("Nombre");
-    nombresColumna.add("Correo Emp.");
-    nombresColumna.add("Correo Per.");
-    nombresColumna.add("Telefono");
-    nombresColumna.add("Edad");
-    nombresColumna.add("Genero");
-    nombresColumna.add("Rol");
-    for(Object columna: nombresColumna){
-        modeloTablaEmpleado.addColumn(columna);
-    }
-    
-    this.jTable12.setModel(modeloTablaEmpleado);
-    empleados = empleadoController.listar(em);
-    for(Empleado empleado: empleados){
-        Object[] informacion = new Object[]{empleado.getId(),empleado.getNombre() + " " + empleado.getApellidos(),
-            empleado.getCorreoEmpresa(), empleado.getCorreoPersonal(), empleado.getNumeroTelefono(),
-            empleado.getEdad(), empleado.getGenero().getDescripcion(), empleado.getRol().getDescripcion()};
-        datos.add(informacion);
-    }
-    for(Object[] datosEmpleados: datos){
-        modeloTablaEmpleado.addRow(datosEmpleados);
-    }
+        ArrayList<Object> nombresColumna = new ArrayList<Object>();
+        ArrayList<Object[]> datos = new ArrayList<Object[]>();
+        List<Empleado> empleados = new ArrayList<Empleado>();
+        EmpleadoController empleadoController = new EmpleadoController();
 
-    TableColumnModel columnModel = jTable12.getColumnModel();
-    columnModel.getColumn(0).setPreferredWidth(2); 
-    columnModel.getColumn(1).setPreferredWidth(100); 
-    columnModel.getColumn(2).setPreferredWidth(120); 
-    columnModel.getColumn(4).setPreferredWidth(50); 
-    columnModel.getColumn(5).setPreferredWidth(30); 
-    columnModel.getColumn(6).setPreferredWidth(30); 
-    columnModel.getColumn(7).setPreferredWidth(50);
+        nombresColumna.add("Id");
+        nombresColumna.add("Nombre");
+        nombresColumna.add("Correo Emp.");
+        nombresColumna.add("Correo Per.");
+        nombresColumna.add("Telefono");
+        nombresColumna.add("Edad");
+        nombresColumna.add("Genero");
+        nombresColumna.add("Rol");
+        for (Object columna : nombresColumna) {
+            modeloTablaEmpleado.addColumn(columna);
+        }
 
-    this.jTable12.setModel(modeloTablaEmpleado);
-    this.jTable12.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-}
+        this.jTable12.setModel(modeloTablaEmpleado);
+        empleados = empleadoController.listar(em);
+        for (Empleado empleado : empleados) {
+            String genero = new String();
+            String rol = new String();
+            if (empleado.getGenero().getCodigoGeneral().equals("GENERO_MASCULINO")) {
+                genero = "H";
+            } else {
+                genero = "M";
+            }
+            switch (empleado.getRol().getCodigoGeneral()) {
+                case "ROL_ADMINISTRADOR_GENERAL":
+                    rol = "Administrador General";
+                    break;
+                case "ROL_ADMINISTRADOR":
+                    rol = "Administrador";
+                    break;
+                case "ROL_EMPLEADO":
+                    rol = "Empleado";
+                    break;
+            }
+            Object[] informacion = new Object[]{empleado.getId(), empleado.getNombre() + " " + empleado.getApellidos(),
+                empleado.getCorreoEmpresa(), empleado.getCorreoPersonal(), empleado.getNumeroTelefono(),
+                empleado.getEdad(), genero, rol};
+            datos.add(informacion);
+        }
+        for (Object[] datosEmpleados : datos) {
+            modeloTablaEmpleado.addRow(datosEmpleados);
+        }
 
+        TableColumnModel columnModel = jTable12.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(2);
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(2).setPreferredWidth(120);
+        columnModel.getColumn(4).setPreferredWidth(50);
+        columnModel.getColumn(5).setPreferredWidth(30);
+        columnModel.getColumn(6).setPreferredWidth(30);
+        columnModel.getColumn(7).setPreferredWidth(50);
+
+        this.jTable12.setModel(modeloTablaEmpleado);
+        this.jTable12.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
 
     public EntityManager getEm() {
         return em;
@@ -116,6 +137,7 @@ public class ListarEmpleados extends javax.swing.JFrame {
         jButton6 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
         jButton37 = new javax.swing.JButton();
 
         jPanel1.setBackground(new java.awt.Color(0, 153, 204));
@@ -239,6 +261,17 @@ public class ListarEmpleados extends javax.swing.JFrame {
             }
         });
 
+        jButton9.setBackground(new java.awt.Color(204, 204, 204));
+        jButton9.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jButton9.setText("Perfil");
+        jButton9.setBorder(null);
+        jButton9.setBorderPainted(false);
+        jButton9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton9ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -248,7 +281,8 @@ public class ListarEmpleados extends javax.swing.JFrame {
                     .addComponent(jButton5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE))
+                    .addComponent(jButton8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .addComponent(jButton9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -259,6 +293,8 @@ public class ListarEmpleados extends javax.swing.JFrame {
                 .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -347,21 +383,21 @@ public class ListarEmpleados extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton36ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
+        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em, this.empleadoConectado);
         this.setVisible(false);
         menuPrincipal.setEmpleadoConectado(empleadoConectado);
         menuPrincipal.setVisible(true);
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        ListarProyecto listarProyecto = new ListarProyecto(this.em);
+        ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarProyecto.setEmpleadoConectado(empleadoConectado);
         listarProyecto.setVisible(true);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        ListarTareas listarTareas = new ListarTareas(this.em);
+        ListarTareas listarTareas = new ListarTareas(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarTareas.setEmpleadoConectado(empleadoConectado);
         listarTareas.setVisible(true);
@@ -374,8 +410,22 @@ public class ListarEmpleados extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton37ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton37ActionPerformed
-        // TODO add your handling code here:
+        if (this.jTable12.getSelectedRow() != -1 && this.jTable12.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaEmpleado.getValueAt(this.jTable12.getSelectedRow(), 0)));
+            Empleado empleado = empleadoController.empleadoPorId(em, id);
+            DetalleEmpleado detalleEmpleado = new DetalleEmpleado(empleado, this);
+            this.setVisible(false);
+            detalleEmpleado.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
     }//GEN-LAST:event_jButton37ActionPerformed
+
+    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+        VerPerfil verPerfil = new VerPerfil(this.em, this.empleadoConectado);
+        this.setVisible(false);
+        verPerfil.setVisible(true);
+    }//GEN-LAST:event_jButton9ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -405,7 +455,6 @@ public class ListarEmpleados extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -415,6 +464,7 @@ public class ListarEmpleados extends javax.swing.JFrame {
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

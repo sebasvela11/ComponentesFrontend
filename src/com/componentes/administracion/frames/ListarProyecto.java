@@ -11,6 +11,7 @@ import com.componentes.ulatina.modelo.Proyecto;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -22,14 +23,16 @@ import javax.swing.table.TableColumnModel;
 public class ListarProyecto extends javax.swing.JFrame {
 
     DefaultTableModel modeloTablaProyecto = new DefaultTableModel();
+    ProyectoController poryectoController = new ProyectoController();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
 
     /**
      * Creates new form ListarProyecto
      */
-    public ListarProyecto(EntityManager em) {
+    public ListarProyecto(EntityManager em, Empleado empleado) {
         this.em = em;
+        this.empleadoConectado = empleado;
         initComponents();
         cargarTabla();
     }
@@ -53,9 +56,24 @@ public class ListarProyecto extends javax.swing.JFrame {
         this.jTable13.setModel(modeloTablaProyecto);
         proyectos = proyectoController.listar(em);
         for (Proyecto proyecto : proyectos) {
+            String estado = new String();
+            switch(proyecto.getEstado().getCodigoGeneral()){
+            case "ESTADO_PROYECTO_EN_PROCESO":
+                estado = "En Proceso";
+                break;
+            case "ESTADO_PROYECTO_FINALIZADO":
+                estado = "Finalizado";
+                break;
+            case "ESTADO_PROYECTO_PAUSADO":
+                estado = "Pausado";
+                break;
+            case "ESTADO_PROYECTO_PENDIENTE":
+                estado = "Pendiente";
+                break;
+        }
             Object[] informacion = new Object[]{proyecto.getId(), proyecto.getNombre(),
                 proyecto.getDescripcion(), proyecto.getFechaInicio(), proyecto.getFechaFinal(),
-                proyecto.getEstado().getDescripcion()};
+                estado};
             datos.add(informacion);
         }
         for (Object[] datosEmpleados : datos) {
@@ -118,6 +136,7 @@ public class ListarProyecto extends javax.swing.JFrame {
         jButton10 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
         jButton12 = new javax.swing.JButton();
+        jButton13 = new javax.swing.JButton();
         jScrollPane13 = new javax.swing.JScrollPane();
         jTable13 = new javax.swing.JTable();
         jButton39 = new javax.swing.JButton();
@@ -311,6 +330,17 @@ public class ListarProyecto extends javax.swing.JFrame {
             }
         });
 
+        jButton13.setBackground(new java.awt.Color(204, 204, 204));
+        jButton13.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jButton13.setText("Perfil");
+        jButton13.setBorder(null);
+        jButton13.setBorderPainted(false);
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -320,7 +350,8 @@ public class ListarProyecto extends javax.swing.JFrame {
                     .addComponent(jButton9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE))
+                    .addComponent(jButton12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .addComponent(jButton13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
@@ -331,7 +362,9 @@ public class ListarProyecto extends javax.swing.JFrame {
                 .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 304, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 267, Short.MAX_VALUE)
                 .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -494,21 +527,21 @@ public class ListarProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton36ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
+        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em, this.empleadoConectado);
         this.setVisible(false);
         menuPrincipal.setEmpleadoConectado(empleadoConectado);
         menuPrincipal.setVisible(true);
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em);
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarEmpleados.setEmpleadoConectado(empleadoConectado);
         listarEmpleados.setVisible(true);
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        ListarTareas listarTareas = new ListarTareas(this.em);
+        ListarTareas listarTareas = new ListarTareas(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarTareas.setEmpleadoConectado(empleadoConectado);
         listarTareas.setVisible(true);
@@ -527,8 +560,22 @@ public class ListarProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton39ActionPerformed
 
     private void jButton41ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton41ActionPerformed
-        // TODO add your handling code here:
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaProyecto.getValueAt(this.jTable13.getSelectedRow(), 0)));
+            Proyecto proyecto = poryectoController.proyectoPorId(em, id);
+            DetalleProyecto detalleProyecto = new DetalleProyecto(proyecto, this);
+            this.setVisible(false);
+            detalleProyecto.setVisible(true);
+        }else{
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
     }//GEN-LAST:event_jButton41ActionPerformed
+
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
+        VerPerfil verPerfil = new VerPerfil(this.em, this.empleadoConectado);
+        this.setVisible(false);
+        verPerfil.setVisible(true);
+    }//GEN-LAST:event_jButton13ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -565,6 +612,7 @@ public class ListarProyecto extends javax.swing.JFrame {
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton12;
+    private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton36;

@@ -33,11 +33,23 @@ public class ProyectoController implements Serializable {
             e.printStackTrace();
         }
     }
-
+    
+    public void modificar(EntityManager em, Proyecto proyecto) {
+        try {
+            if (proyecto != null) {
+                servicioProyecto.modificar(em, proyecto);
+            } else {
+                throw new Exception("ERROR - Proyecto llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public Proyecto proyectoPorId(EntityManager em, int id) {
         Proyecto proyecto = new Proyecto();
         try {
-            if (id != 0 && id < 0) {
+            if (id != 0 && id > 0) {
                 proyecto = servicioProyecto.proyectoPorId(em, id);
                 if (proyecto == null) {
                     throw new Exception("ERROR - Proyecto no encontrado");

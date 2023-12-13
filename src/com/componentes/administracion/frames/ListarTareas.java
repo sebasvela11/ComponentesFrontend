@@ -5,12 +5,14 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.DetalleController;
 import com.componentes.administracion.controllers.TareaProyectoController;
 import com.componentes.ulatina.modelo.Empleado;
 import com.componentes.ulatina.modelo.TareaProyecto;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
@@ -20,25 +22,29 @@ import javax.swing.table.TableColumnModel;
  * @author mateo
  */
 public class ListarTareas extends javax.swing.JFrame {
+
     DefaultTableModel modeloTablaTarea = new DefaultTableModel();
+    TareaProyectoController tareaProyectoController = new TareaProyectoController();
     Empleado empleadoConectado = new Empleado();
     EntityManager em;
 
     /**
      * Creates new form ListarProyectoEmpleado
      */
-    public ListarTareas(EntityManager em) {
+    public ListarTareas(EntityManager em, Empleado empleado) {
         this.em = em;
+        this.empleadoConectado = empleado;
         initComponents();
-        cargarTabla();
+        this.cargarTabla();
+        this.validarPermisos();
     }
-    
+
     public void cargarTabla() {
         ArrayList<Object> nombresColumna = new ArrayList<Object>();
         ArrayList<Object[]> datos = new ArrayList<Object[]>();
         List<TareaProyecto> tareasProyecto = new ArrayList<TareaProyecto>();
         TareaProyectoController tareaProyectoController = new TareaProyectoController();
-        
+
         nombresColumna.add("Id");
         nombresColumna.add("Nombre");
         nombresColumna.add("Empleado");
@@ -46,29 +52,66 @@ public class ListarTareas extends javax.swing.JFrame {
         nombresColumna.add("Tiempo invertido");
         nombresColumna.add("Estado");
         nombresColumna.add("Tipo");
-        for(Object columna: nombresColumna){
+        for (Object columna : nombresColumna) {
             modeloTablaTarea.addColumn(columna);
         }
-        
+
         this.jTable13.setModel(modeloTablaTarea);
-        tareasProyecto = tareaProyectoController.listar(em);
-        for(TareaProyecto tareaProyecto: tareasProyecto){
-            Object[] informacion = new Object[]{tareaProyecto.getId(), tareaProyecto.getTituloTarea(), 
-                tareaProyecto.getEmpleado().getNombre() + " " + tareaProyecto.getEmpleado().getApellidos(), 
-                tareaProyecto.getProyecto().getNombre(), tareaProyecto.getTiempoInvertido(), tareaProyecto.getEstado().getDescripcion(),
-                tareaProyecto.getTipoTarea().getDescripcion()};
+        if (this.empleadoConectado.getRol().getCodigoGeneral().equals("ROL_EMPLEADO")) {
+            tareasProyecto = tareaProyectoController.listarPorEmpleado(em, empleadoConectado);
+        } else {
+            tareasProyecto = tareaProyectoController.listar(em);
+        }
+        for (TareaProyecto tareaProyecto : tareasProyecto) {
+            String estado = new String();
+            String tipo = new String();
+            switch (tareaProyecto.getEstado().getCodigoGeneral()) {
+                case "ESTADO_TAREA_EN_PROCESO":
+                    estado = "En Proceso";
+                    break;
+                case "ESTADO_TAREA_FINALIZADA":
+                    estado = "Finalizada";
+                    break;
+                case "ESTADO_TAREA_PAUSADA":
+                    estado = "Pausada";
+                    break;
+                case "ESTADO_TAREA_PENDIENTE":
+                    estado = "Pendiente";
+                    break;
+            }
+            switch (tareaProyecto.getTipoTarea().getCodigoGeneral()) {
+                case "TIPO_TAREA_PERMANENTE":
+                    tipo = "Permanente";
+                    break;
+                case "TIPO_TAREA_ESPECIFICA":
+                    tipo = "Especifica";
+                    break;
+            }
+            Object[] informacion = new Object[]{tareaProyecto.getId(), tareaProyecto.getTituloTarea(),
+                tareaProyecto.getEmpleado().getNombre() + " " + tareaProyecto.getEmpleado().getApellidos(),
+                tareaProyecto.getProyecto().getNombre(), tareaProyecto.getTiempoInvertido(), estado,
+                tipo};
             datos.add(informacion);
         }
-        for(Object[] datosEmpleados: datos){
+        for (Object[] datosEmpleados : datos) {
             modeloTablaTarea.addRow(datosEmpleados);
         }
         TableColumnModel columnModel = jTable13.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(2);
         columnModel.getColumn(2).setPreferredWidth(100);
         columnModel.getColumn(4).setPreferredWidth(100);
-        
+
         this.jTable13.setModel(modeloTablaTarea);
         this.jTable13.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    public void validarPermisos() {
+        if (this.empleadoConectado.getRol().getCodigoGeneral().equals("ROL_EMPLEADO")) {
+            this.jButton10.setVisible(false);
+            this.jButton11.setVisible(false);
+            this.jButton39.setVisible(false);
+            this.jButton40.setVisible(false);
+        }
     }
 
     public EntityManager getEm() {
@@ -85,6 +128,15 @@ public class ListarTareas extends javax.swing.JFrame {
 
     public void setEmpleadoConectado(Empleado empleadoConectado) {
         this.empleadoConectado = empleadoConectado;
+    }
+
+    public boolean validarNumero(String numero) {
+        try {
+            Double.parseDouble(numero);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**
@@ -106,11 +158,14 @@ public class ListarTareas extends javax.swing.JFrame {
         jButton10 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
         jButton12 = new javax.swing.JButton();
+        jButton13 = new javax.swing.JButton();
         jScrollPane13 = new javax.swing.JScrollPane();
         jTable13 = new javax.swing.JTable();
         jButton39 = new javax.swing.JButton();
         jButton40 = new javax.swing.JButton();
         jButton41 = new javax.swing.JButton();
+        jButton42 = new javax.swing.JButton();
+        jButton43 = new javax.swing.JButton();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -178,6 +233,17 @@ public class ListarTareas extends javax.swing.JFrame {
             }
         });
 
+        jButton13.setBackground(new java.awt.Color(204, 204, 204));
+        jButton13.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jButton13.setText("Perfil");
+        jButton13.setBorder(null);
+        jButton13.setBorderPainted(false);
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -187,7 +253,8 @@ public class ListarTareas extends javax.swing.JFrame {
                     .addComponent(jButton9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE))
+                    .addComponent(jButton12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .addComponent(jButton13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
@@ -198,6 +265,8 @@ public class ListarTareas extends javax.swing.JFrame {
                 .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -249,6 +318,26 @@ public class ListarTareas extends javax.swing.JFrame {
             }
         });
 
+        jButton42.setBackground(new java.awt.Color(255, 255, 255));
+        jButton42.setText("Agregar Timepo");
+        jButton42.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.white, java.awt.Color.white));
+        jButton42.setPreferredSize(new java.awt.Dimension(80, 30));
+        jButton42.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton42ActionPerformed(evt);
+            }
+        });
+
+        jButton43.setBackground(new java.awt.Color(255, 255, 255));
+        jButton43.setText("Cambiar Estado");
+        jButton43.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.white, java.awt.Color.white));
+        jButton43.setPreferredSize(new java.awt.Dimension(80, 30));
+        jButton43.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton43ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -256,9 +345,13 @@ public class ListarTareas extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 568, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jButton42, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton43, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton41, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton39, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -275,7 +368,9 @@ public class ListarTareas extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton40, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton39, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton41, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton41, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton42, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton43, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -318,21 +413,21 @@ public class ListarTareas extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em);
+        MenuPrincipal menuPrincipal = new MenuPrincipal(this.em, this.empleadoConectado);
         this.setVisible(false);
         menuPrincipal.setEmpleadoConectado(empleadoConectado);
         menuPrincipal.setVisible(true);
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em);
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarEmpleados.setEmpleadoConectado(empleadoConectado);
         listarEmpleados.setVisible(true);
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        ListarProyecto listarProyecto = new ListarProyecto(this.em);
+        ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado);
         this.setVisible(false);
         listarProyecto.setEmpleadoConectado(empleadoConectado);
         listarProyecto.setVisible(true);
@@ -353,8 +448,87 @@ public class ListarTareas extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton40ActionPerformed
 
     private void jButton41ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton41ActionPerformed
-        // TODO add your handling code here:
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaTarea.getValueAt(this.jTable13.getSelectedRow(), 0)));
+            TareaProyecto tareaProyecto = tareaProyectoController.tareaProyectoPorId(em, id);
+            DetalleTarea detalleTarea = new DetalleTarea(tareaProyecto, this);
+            this.setVisible(false);
+            detalleTarea.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
     }//GEN-LAST:event_jButton41ActionPerformed
+
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
+        VerPerfil verPerfil = new VerPerfil(this.em, this.empleadoConectado);
+        this.setVisible(false);
+        verPerfil.setVisible(true);
+    }//GEN-LAST:event_jButton13ActionPerformed
+
+    private void jButton42ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton42ActionPerformed
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaTarea.getValueAt(this.jTable13.getSelectedRow(), 0)));
+            TareaProyecto tarea = this.tareaProyectoController.tareaProyectoPorId(em, id);
+            String name = JOptionPane.showInputDialog("Introduzca el tiempo en horas.");
+            if (this.validarNumero(name)) {
+                double tiempoTotal = tarea.getTiempoInvertido() + Double.parseDouble(name);
+                tarea.setTiempoInvertido(tiempoTotal);
+                this.tareaProyectoController.modificar(em, tarea);
+                modeloTablaTarea = new DefaultTableModel();
+                this.cargarTabla();
+            } else {
+                JOptionPane.showMessageDialog(null, "Horas no validas.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
+    }//GEN-LAST:event_jButton42ActionPerformed
+
+    private void jButton43ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton43ActionPerformed
+        DetalleController detalleController = new DetalleController();
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            int id = Integer.parseInt(String.valueOf(modeloTablaTarea.getValueAt(this.jTable13.getSelectedRow(), 0)));
+            TareaProyecto tarea = this.tareaProyectoController.tareaProyectoPorId(em, id);
+            Object[] estados = {"En Proceso", "Finalizada", "Pausada", "Pendiente"};
+            int posicion = 0;
+            switch (tarea.getEstado().getCodigoGeneral()) {
+                case "ESTADO_TAREA_EN_PROCESO":
+                    posicion = 0;
+                    break;
+                case "ESTADO_TAREA_FINALIZADA":
+                    posicion = 1;
+                    break;
+                case "ESTADO_TAREA_PAUSADA":
+                    posicion = 2;
+                    break;
+                case "ESTADO_TAREA_PENDIENTE":
+                    posicion = 3;
+                    break;
+            }
+            Object opcion = JOptionPane.showInputDialog(null, "Selecciona un color", "Elegir", JOptionPane.QUESTION_MESSAGE, null, estados, estados[posicion]);
+            String nuevoEstado = new String();
+            switch (opcion.toString()) {
+                case "En Proceso":
+                    nuevoEstado = "ESTADO_TAREA_EN_PROCESO";
+                    break;
+                case "Finalizada":
+                    nuevoEstado = "ESTADO_TAREA_FINALIZADA";
+                    break;
+                case "Pausada":
+                    nuevoEstado = "ESTADO_TAREA_PAUSADA";
+                    break;
+                case "Pendiente":
+                    nuevoEstado = "ESTADO_TAREA_PENDIENTE";
+                    break;
+            }
+            tarea.setEstado(detalleController.detallePorCodigoGeneral(em, nuevoEstado));
+            tareaProyectoController.modificar(em, tarea);
+            modeloTablaTarea = new DefaultTableModel();
+            this.cargarTabla();
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
+    }//GEN-LAST:event_jButton43ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -393,9 +567,12 @@ public class ListarTareas extends javax.swing.JFrame {
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton12;
+    private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton39;
     private javax.swing.JButton jButton40;
     private javax.swing.JButton jButton41;
+    private javax.swing.JButton jButton42;
+    private javax.swing.JButton jButton43;
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

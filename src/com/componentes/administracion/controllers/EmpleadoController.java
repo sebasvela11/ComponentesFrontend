@@ -30,6 +30,18 @@ public class EmpleadoController implements Serializable {
             e.printStackTrace();
         }
     }
+    
+    public void modificar(EntityManager em, Empleado empleado) {
+        try {
+            if (empleado != null) {
+                servicioEmpleado.modificar(em, empleado);
+            } else {
+                throw new Exception("ERROR - Empleado llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public Empleado validarUsuario(EntityManager em, String creedencial, String contrasena) {
         Empleado empleado = new Empleado();
@@ -48,7 +60,7 @@ public class EmpleadoController implements Serializable {
     public Empleado empleadoPorId(EntityManager em, int id) {
         Empleado empleado = new Empleado();
         try {
-            if (id != 0 && id < 0) {
+            if (id != 0 && id > 0) {
                 empleado = servicioEmpleado.empleadoPorId(em, id);
                 if (empleado == null) {
                     throw new Exception("ERROR - Usuario no encontrado");
