@@ -25,7 +25,7 @@ public class HorarioController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void modificar(EntityManager em, Horario horario) {
         try {
             if (horario != null) {

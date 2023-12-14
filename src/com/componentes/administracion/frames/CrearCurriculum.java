@@ -5,33 +5,177 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.CurriculumController;
+import com.componentes.administracion.controllers.DetalleController;
+import com.componentes.administracion.controllers.DetalleCurriculumController;
 import com.componentes.administracion.controllers.EmpleadoController;
+import com.componentes.administracion.controllers.HorarioController;
+import com.componentes.administracion.controllers.MaestroController;
+import com.componentes.ulatina.modelo.Curriculum;
+import com.componentes.ulatina.modelo.Detalle;
+import com.componentes.ulatina.modelo.DetalleCurriculum;
 import com.componentes.ulatina.modelo.Empleado;
+import com.componentes.ulatina.modelo.Horario;
+import com.componentes.ulatina.modelo.Maestro;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
 
 /**
  *
  * @author mateo
  */
 public class CrearCurriculum extends javax.swing.JFrame {
-    DefaultTableModel modeloTablaEmpleado = new DefaultTableModel();
+
+    DefaultTableModel modeloTablaDetalles = new DefaultTableModel();
+    Empleado empleado = new Empleado();
+    Horario horario = new Horario();
+    Curriculum curriculum = new Curriculum();
+    EmpleadoController empleadoController = new EmpleadoController();
+    HorarioController horarioController = new HorarioController();
+    CurriculumController curriculumController = new CurriculumController();
+    DetalleCurriculumController detalleCurriculumController = new DetalleCurriculumController();
+    DetalleController detalleController = new DetalleController();
+    MaestroController maestroController = new MaestroController();
     Empleado empleadoConectado = new Empleado();
+    ArrayList<Object[]> datos = new ArrayList<Object[]>();
+    List<Detalle> tipos = new ArrayList<Detalle>();
     EntityManager em;
 
     /**
      * Creates new form ListarEmpleados
      */
+    public CrearCurriculum(EntityManager em, Empleado empleado, Horario horario, Empleado empleadoConectado) {
+        this.em = em;
+        this.empleadoConectado = empleadoConectado;
+        this.horario = horario;
+        this.empleado = empleado;
+        this.initComponents();
+        this.cargarTabla();
+        this.cargarOpciones();
+    }
+
+    public void cargarTabla() {
+        this.modeloTablaDetalles = new DefaultTableModel();
+        ArrayList<Object> nombresColumna = new ArrayList<Object>();
+        nombresColumna.add("Titulo");
+        nombresColumna.add("Descripcion");
+        nombresColumna.add("Fecha Inicio");
+        nombresColumna.add("Fecha Final");
+        nombresColumna.add("Tipo");
+        for (Object columna : nombresColumna) {
+            this.modeloTablaDetalles.addColumn(columna);
+        }
+        if (!datos.isEmpty()) {
+            for (Object[] dato : datos) {
+                this.modeloTablaDetalles.addRow(dato);
+            }
+        }
+        this.jTable13.setModel(this.modeloTablaDetalles);
+    }
+
+    public void agregarFila() {
+        Object[] nuevaFila = new Object[]{this.jTextField4.getText(), this.jTextField1.getText(), this.jTextField2.getText(), this.jTextField3.getText(), jComboBox1.getSelectedItem().toString()};
+        this.datos.add(nuevaFila);
+    }
+
+    public void eliminarFila() {
+        this.datos.remove(this.jTable13.getSelectedRow());
+    }
+
+    public void cargarOpciones() {
+        Maestro tipo = new Maestro();
+        tipo = this.maestroController.maestroPorCodigoGeneral(em, "TIPO_DETALLE_CURRICULUM");
+        this.tipos = this.detalleController.listarPorMaestro(em, tipo);
+        for (Detalle detalle : this.tipos) {
+            String opcion = new String();
+            switch (detalle.getCodigoGeneral()) {
+                case "TIPO_DETALLE_EXPERIENCIA":
+                    opcion = "Experiencia";
+                    break;
+                case "TIPO_DETALLE_ESTUDIOS":
+                    opcion = "Estudios";
+                    break;
+                case "TIPO_DETALLE_HABILIDAD":
+                    opcion = "Habilidad";
+                    break;
+            }
+            this.jComboBox1.addItem(opcion);
+        }
+    }
+
+    public void vaciarCampos() {
+        this.jTextField4.setText("");
+        this.jTextField1.setText("");
+        this.jTextField2.setText("");
+        this.jTextField3.setText("");
+        this.jComboBox1.setSelectedIndex(0);
+    }
+
+    public boolean validarInformacion() {
+        try {
+            Date date1 = Date.valueOf(this.jTextField2.getText());
+            Date date2 = Date.valueOf(this.jTextField3.getText());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void guardarDatos() {
+        this.empleadoController.insertar(this.em, this.empleado);
+        Empleado empleadoInsertado = this.empleadoController.validarUsuario(this.em, this.empleado.getCorreoEmpresa(), this.empleado.getContrasena());
+        this.horario.setId(this.calcularMayorId());
+        this.horario.setEmpleado(empleadoInsertado.getId());
+        this.horarioController.insertar(em, this.horario);
+        this.curriculum.setEmpleado(empleadoInsertado);
+        this.curriculumController.insertar(em, curriculum);
+        Curriculum curriculumInsertado = this.curriculumController.listarPorEmpleado(em, empleadoInsertado);
+        for (int i = 0; i < this.jTable13.getRowCount(); i++) {
+            DetalleCurriculum detalleCurriculum = new DetalleCurriculum();
+            detalleCurriculum.setCurriculum(curriculumInsertado);
+            detalleCurriculum.setTitulo(String.valueOf(this.modeloTablaDetalles.getValueAt(i, 0)));
+            detalleCurriculum.setDescripcion(String.valueOf(this.modeloTablaDetalles.getValueAt(i, 1)));
+            detalleCurriculum.setFechaInicio(Date.valueOf(String.valueOf(this.modeloTablaDetalles.getValueAt(i, 2))));
+            detalleCurriculum.setFechaFinal(Date.valueOf(String.valueOf(this.modeloTablaDetalles.getValueAt(i, 3))));
+
+            switch (String.valueOf(this.modeloTablaDetalles.getValueAt(i, 4))) {
+                case "Experiencia":
+                    detalleCurriculum.setTipoDetalleCurriculum(this.detalleController.detallePorCodigoGeneral(em, "TIPO_DETALLE_EXPERIENCIA"));
+                    break;
+                case "Estudios":
+                    detalleCurriculum.setTipoDetalleCurriculum(this.detalleController.detallePorCodigoGeneral(em, "TIPO_DETALLE_ESTUDIOS"));
+                    break;
+                case "Habilidad":
+                    detalleCurriculum.setTipoDetalleCurriculum(this.detalleController.detallePorCodigoGeneral(em, "TIPO_DETALLE_HABILIDAD"));
+                    break;
+            }
+            this.detalleCurriculumController.insertar(em, detalleCurriculum);
+        }
+    }
+
+    public Integer calcularMayorId() {
+        List<Horario> horarios = new ArrayList<Horario>();
+        Integer maximo = 0;
+        this.horarioController.listar(this.em);
+        for(Horario horario: horarios){
+            if(horario.getId() > maximo){
+                maximo = horario.getId();
+            }
+        }
+        return maximo;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(value = "unchecked")
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -145,7 +289,6 @@ public class CrearCurriculum extends javax.swing.JFrame {
 
         jLabel10.setText("Tipo Curriculum");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Experiencia", "Estudios", "Habilidad" }));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -172,7 +315,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
             }
         });
 
-        jTable12 = new javax.swing.JTable(){
+        jTable13 = new javax.swing.JTable(){
             public boolean isCellEditable(int rowIndex, int colIndex){
                 return false;
             }
@@ -221,7 +364,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
             .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel10Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 695, Short.MAX_VALUE)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         jPanel10Layout.setVerticalGroup(
@@ -271,7 +414,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
                 .addGap(26, 26, 26)
                 .addComponent(jLabel2)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jPanel10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -295,6 +438,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
@@ -302,7 +446,18 @@ public class CrearCurriculum extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel3MouseClicked
 
     private void jButton37ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton37ActionPerformed
-        // TODO add your handling code here:
+        if (!this.jTextField4.getText().isEmpty() && !this.jTextField1.getText().isEmpty()
+                && !this.jTextField2.getText().isEmpty() && !this.jTextField3.getText().isEmpty() && this.validarInformacion()) {
+            this.agregarFila();
+            this.cargarTabla();
+            this.vaciarCampos();
+        } else {
+            if (this.validarInformacion()) {
+                JOptionPane.showMessageDialog(null, "Los campos no deben estar vaciós");
+            } else {
+                JOptionPane.showMessageDialog(null, "Campos no validos");
+            }
+        }
     }//GEN-LAST:event_jButton37ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
@@ -310,45 +465,33 @@ public class CrearCurriculum extends javax.swing.JFrame {
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jButton38ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton38ActionPerformed
-        // TODO add your handling code here:
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em, this.empleadoConectado);
+        int opcion = JOptionPane.showConfirmDialog(null, "No se podrán hacer mas cambios a este listado.",
+                "¿Desea continuar?", JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE);
+        if (opcion == 0) {
+            this.guardarDatos();
+            listarEmpleados.modeloTablaEmpleado = new DefaultTableModel();
+            listarEmpleados.cargarTabla();
+            listarEmpleados.setVisible(true);
+            this.dispose();
+        } else {
+            return;
+        }
     }//GEN-LAST:event_jButton38ActionPerformed
 
     private void jButton39ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton39ActionPerformed
-        // TODO add your handling code here:
+        if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+            this.eliminarFila();
+            this.cargarTabla();
+        } else {
+            JOptionPane.showMessageDialog(null, "Debes seleccionar una fila.");
+        }
     }//GEN-LAST:event_jButton39ActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CrearCurriculum.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CrearCurriculum.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CrearCurriculum.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CrearCurriculum.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        //</editor-fold>
-
-        /* Create and display the form */
-        
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton37;

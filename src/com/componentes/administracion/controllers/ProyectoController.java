@@ -67,7 +67,7 @@ public class ProyectoController implements Serializable {
         List<Proyecto> proyectos = new ArrayList<Proyecto>();
         try {
             proyectos = servicioProyecto.listar(em);
-            if (proyectos == null && !proyectos.isEmpty()) {
+            if (proyectos == null && proyectos.isEmpty()) {
                 throw new Exception("ERROR - Proyectos no ecnotrados");
             }
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public class ProyectoController implements Serializable {
         try {
             if(empleado != null){
                 proyectos = servicioProyecto.listarPorEmpleado(em, empleado);
-                if(proyectos != null && !proyectos.isEmpty()){
+                if(proyectos != null && proyectos.isEmpty()){
                     throw new Exception("ERROR - Proyectos no ecnotrados");
                 }
             }else{

@@ -5,17 +5,146 @@
  */
 package com.componentes.administracion.frames;
 
+import com.componentes.administracion.controllers.CurriculumController;
+import com.componentes.administracion.controllers.DetalleController;
+import com.componentes.administracion.controllers.DetalleCurriculumController;
+import com.componentes.administracion.controllers.EmpleadoController;
+import com.componentes.administracion.controllers.HorarioController;
+import com.componentes.administracion.controllers.MaestroController;
+import com.componentes.ulatina.modelo.Detalle;
+import com.componentes.ulatina.modelo.Empleado;
+import com.componentes.ulatina.modelo.Horario;
+import com.componentes.ulatina.modelo.Maestro;
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Int;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Cultisof
  */
 public class CrearEmpleados extends javax.swing.JFrame {
 
+    boolean editando;
+    Empleado empleadoConectado = new Empleado();
+    Empleado empleado = new Empleado();
+    Horario horario = new Horario();
+    HorarioController horarioController = new HorarioController();
+    DetalleController detalleController = new DetalleController();
+    MaestroController mestroController = new MaestroController();
+    EmpleadoController empleadoController = new EmpleadoController();
+    CurriculumController curriculumController = new CurriculumController();
+    DetalleCurriculumController detalleCurriculumController = new DetalleCurriculumController();
+    List<Detalle> roles = new ArrayList<Detalle>();
+    List<Detalle> generos = new ArrayList<Detalle>();
+    EntityManager em;
+
     /**
      * Creates new form CrearEmpleados
      */
-    public CrearEmpleados() {
+    public CrearEmpleados(EntityManager em, Empleado empleado, Empleado empleadoConectado, boolean editando) {
+        this.em = em;
+        this.empleado = empleado;
+        this.empleadoConectado = empleadoConectado;
+        this.editando = editando;
+        this.horarioPorEmpleado();
         initComponents();
+        this.validarAccion();
+        this.cargarOpciones();
+        this.cargarDatos();
+    }
+
+    public void validarAccion() {
+        if (editando) {
+            this.jLabel1.setText("Editar Empleado");
+            this.jButton5.setText("Guardar");
+        }
+    }
+
+    public void horarioPorEmpleado() {
+        if (editando) {
+            this.horario = this.horarioController.horarioPorEmpleado(em, new Integer(this.empleado.getId()));
+        }
+    }
+
+    public void cargarOpciones() {
+        Maestro rol = new Maestro();
+        Maestro genero = new Maestro();
+        rol = this.mestroController.maestroPorCodigoGeneral(em, "ROL_EMPLEADO");
+        genero = this.mestroController.maestroPorCodigoGeneral(em, "GENERO_EMPLEADO");
+        this.roles = this.detalleController.listarPorMaestro(em, rol);
+        this.generos = this.detalleController.listarPorMaestro(em, genero);
+        for (Detalle detalle : this.generos) {
+            this.generoCombo.addItem(detalle.getDescripcion());
+        }
+        for (Detalle detalle : this.roles) {
+            this.rolCombo.addItem(detalle.getDescripcion());
+        }
+    }
+
+    public void cargarDatos() {
+        if (editando) {
+            this.jTextField14.setText(this.empleado.getNombre());
+            this.jTextField12.setText(this.empleado.getApellidos());
+            this.jTextField13.setText(this.empleado.getCorreoPersonal());
+            this.jTextField10.setText(this.empleado.getCorreoEmpresa());
+            this.jPasswordField1.setText(this.empleado.getContrasena());
+            this.jTextField8.setText(Integer.toString(this.empleado.getEdad()));
+            this.jTextField1.setText(this.empleado.getNumeroTelefono());
+            this.jTextField3.setText(this.horario.getHoraEntrada().toString());
+            this.jTextField7.setText(this.horario.getHoraSalida().toString());
+            this.jSpinner1.setValue(this.horario.getDiasLaborales());
+            for (int i = 0; i < this.rolCombo.getItemCount(); i++) {
+                if (this.rolCombo.getItemAt(i).equals(this.empleado.getRol().getDescripcion())) {
+                    this.rolCombo.setSelectedIndex(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < this.generoCombo.getItemCount(); i++) {
+                if (this.generoCombo.getItemAt(i).equals(this.empleado.getGenero().getDescripcion())) {
+                    this.generoCombo.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void guardarCambios() {
+        this.empleado.setNombre(this.jTextField14.getText());
+        this.empleado.setApellidos(this.jTextField12.getText());
+        this.empleado.setCorreoPersonal(this.jTextField13.getText());
+        this.empleado.setCorreoEmpresa(this.jTextField10.getText());
+        this.empleado.setContrasena(this.jPasswordField1.getText());
+        this.empleado.setEdad(Integer.parseInt(this.jTextField8.getText()));
+        this.empleado.setNumeroTelefono(this.jTextField1.getText());
+        this.horario.setHoraEntrada(Time.valueOf(this.jTextField3.getText()));
+        this.horario.setHoraSalida(Time.valueOf(this.jTextField7.getText()));
+        this.horario.setDiasLaborales(Integer.parseInt(this.jSpinner1.getValue().toString()));
+        for (Detalle detalle : roles) {
+            if (detalle.getDescripcion().equals(this.rolCombo.getSelectedItem().toString())) {
+                this.empleado.setRol(detalle);
+            }
+        }
+        for (Detalle detalle : generos) {
+            if (detalle.getDescripcion().equals(this.generoCombo.getSelectedItem().toString())) {
+                this.empleado.setGenero(detalle);
+            }
+        }
+    }
+
+    public boolean validarInformacion() {
+        try {
+            Time time1 = Time.valueOf(this.jTextField7.getText());
+            Time time2 = Time.valueOf(this.jTextField3.getText());
+            int int1 = Integer.parseInt(this.jTextField8.getText());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -34,34 +163,37 @@ public class CrearEmpleados extends javax.swing.JFrame {
         jTextField4 = new javax.swing.JTextField();
         jTextField5 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
+        jTextField6 = new javax.swing.JTextField();
+        jTextField11 = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jPasswordField2 = new javax.swing.JPasswordField();
         jButton5 = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
-        jPasswordField4 = new javax.swing.JPasswordField();
         jLabel10 = new javax.swing.JLabel();
-        jPasswordField5 = new javax.swing.JPasswordField();
         jLabel11 = new javax.swing.JLabel();
-        jPasswordField6 = new javax.swing.JPasswordField();
         jLabel12 = new javax.swing.JLabel();
-        jPasswordField7 = new javax.swing.JPasswordField();
         jLabel13 = new javax.swing.JLabel();
-        jPasswordField8 = new javax.swing.JPasswordField();
         jLabel14 = new javax.swing.JLabel();
-        jPasswordField9 = new javax.swing.JPasswordField();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        rolCombo = new javax.swing.JComboBox<>();
+        generoCombo = new javax.swing.JComboBox<>();
         jLabel6 = new javax.swing.JLabel();
         jSpinner1 = new javax.swing.JSpinner();
         jLabel7 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
         jLabel17 = new javax.swing.JLabel();
-        jComboBox4 = new javax.swing.JComboBox<>();
+        jTextField1 = new javax.swing.JTextField();
+        jTextField3 = new javax.swing.JTextField();
+        jTextField7 = new javax.swing.JTextField();
+        jTextField8 = new javax.swing.JTextField();
+        jTextField10 = new javax.swing.JTextField();
+        jTextField12 = new javax.swing.JTextField();
+        jTextField13 = new javax.swing.JTextField();
+        jTextField14 = new javax.swing.JTextField();
+        jButton6 = new javax.swing.JButton();
+        jPasswordField1 = new javax.swing.JPasswordField();
 
         jButton3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jButton3.setText("Iniciar Sesion");
@@ -124,12 +256,6 @@ public class CrearEmpleados extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel5.setText("Nombre");
 
-        jPasswordField2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField2ActionPerformed(evt);
-            }
-        });
-
         jButton5.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jButton5.setText("Siguiente");
         jButton5.setAlignmentX(2.0F);
@@ -146,56 +272,20 @@ public class CrearEmpleados extends javax.swing.JFrame {
         jLabel9.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel9.setText("Apellidos");
 
-        jPasswordField4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField4ActionPerformed(evt);
-            }
-        });
-
         jLabel10.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel10.setText("Correo Personal");
-
-        jPasswordField5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField5ActionPerformed(evt);
-            }
-        });
 
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel11.setText("Correo Empresa");
 
-        jPasswordField6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField6ActionPerformed(evt);
-            }
-        });
-
         jLabel12.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel12.setText("Contraseña");
-
-        jPasswordField7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField7ActionPerformed(evt);
-            }
-        });
 
         jLabel13.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel13.setText("Telefono");
 
-        jPasswordField8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField8ActionPerformed(evt);
-            }
-        });
-
         jLabel14.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel14.setText("Edad");
-
-        jPasswordField9.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField9ActionPerformed(evt);
-            }
-        });
 
         jLabel15.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel15.setText("Genero");
@@ -203,16 +293,33 @@ public class CrearEmpleados extends javax.swing.JFrame {
         jLabel16.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel16.setText("Rol");
 
+        rolCombo.setEditable(true);
+
+        generoCombo.setEditable(true);
+
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel6.setText("Días Laborales");
 
-        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(0, null, 7, 1));
+        jSpinner1.setModel(new javax.swing.SpinnerNumberModel(1, 1, 7, 1));
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel7.setText("Hora Entrada");
 
         jLabel17.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel17.setText("Hora Salida");
+
+        jButton6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jButton6.setText("Regresar");
+        jButton6.setAlignmentX(2.0F);
+        jButton6.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.white, java.awt.Color.white));
+        jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jButton6.setMargin(new java.awt.Insets(140, 140, 140, 140));
+        jButton6.setPreferredSize(new java.awt.Dimension(80, 30));
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -221,24 +328,6 @@ public class CrearEmpleados extends javax.swing.JFrame {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))
-                        .addGap(37, 37, 37)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jComboBox3, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jComboBox4, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)))
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel10)
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPasswordField5, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
-                            .addComponent(jPasswordField2)
-                            .addComponent(jPasswordField6)))
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -250,15 +339,40 @@ public class CrearEmpleados extends javax.swing.JFrame {
                             .addComponent(jLabel15, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jComboBox1, 0, 356, Short.MAX_VALUE)
-                                .addComponent(jPasswordField7)
-                                .addComponent(jPasswordField9)
-                                .addComponent(jPasswordField8)
-                                .addComponent(jPasswordField4))
-                            .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(generoCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jSpinner1)
+                            .addComponent(jTextField8, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(rolCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jTextField1)
+                            .addComponent(jTextField10)
+                            .addComponent(jPasswordField1)))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel7))
+                                .addGap(37, 37, 37))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                            .addComponent(jTextField3)
+                            .addComponent(jTextField7)))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel10)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField13))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(68, 68, 68)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField12)
+                            .addComponent(jTextField14))))
+                .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,39 +380,39 @@ public class CrearEmpleados extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(jPasswordField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jPasswordField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
-                    .addComponent(jPasswordField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12)
-                    .addComponent(jPasswordField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
-                    .addComponent(jPasswordField9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel13)
-                    .addComponent(jPasswordField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(rolCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel15)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(generoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -306,13 +420,15 @@ public class CrearEmpleados extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
-                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(42, Short.MAX_VALUE))
         );
 
@@ -350,10 +466,11 @@ public class CrearEmpleados extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        
+
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
@@ -368,80 +485,62 @@ public class CrearEmpleados extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField5ActionPerformed
 
-    private void jPasswordField9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField9ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField9ActionPerformed
-
-    private void jPasswordField8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField8ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField8ActionPerformed
-
-    private void jPasswordField7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField7ActionPerformed
-
-    private void jPasswordField6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField6ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField6ActionPerformed
-
-    private void jPasswordField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField5ActionPerformed
-
-    private void jPasswordField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField4ActionPerformed
-
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em, this.empleadoConectado);
+        if (!this.jTextField14.getText().isEmpty() && !this.jTextField12.getText().isEmpty()
+                && !this.jTextField13.getText().isEmpty() && !this.jTextField10.getText().isEmpty()
+                && !this.jPasswordField1.getText().isEmpty() && !this.jTextField8.getText().isEmpty()
+                && !this.jTextField1.getText().isEmpty() && !this.jTextField3.getText().isEmpty()
+                && !this.jTextField7.getText().isEmpty() && this.validarInformacion()) {
+            if (editando) {
+                this.guardarCambios();
+                this.empleadoController.modificar(em, empleado);
+                this.horarioController.modificar(em, horario);
+                JOptionPane.showMessageDialog(null, "Se han guardado los cambios.");
+                listarEmpleados.modeloTablaEmpleado = new DefaultTableModel();
+                listarEmpleados.cargarTabla();
+                listarEmpleados.setVisible(true);
+                this.dispose();
+            } else {
+                int opcion = JOptionPane.showConfirmDialog(null, "Deberá terminar el registro",
+                        "¿Desea continuar?", JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE);
+                if (opcion == 0) {
+                    this.guardarCambios();
+                    CrearCurriculum crearCurriculum = new CrearCurriculum(this.em, this.empleado, this.horario, this.empleadoConectado);
+                    this.setVisible(false);
+                    crearCurriculum.setVisible(true);
+                } else {
+                    return;
+                }
+            }
+        } else {
+            if (!this.validarInformacion()) {
+                JOptionPane.showMessageDialog(null, "Campo no valido.");
+            } else {
+                JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
+                return;
+            }
+        }
     }//GEN-LAST:event_jButton5ActionPerformed
 
-    private void jPasswordField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField2ActionPerformed
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        ListarEmpleados listarEmpleados = new ListarEmpleados(this.em, this.empleadoConectado);
+        listarEmpleados.modeloTablaEmpleado = new DefaultTableModel();
+        listarEmpleados.cargarTabla();
+        listarEmpleados.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton6ActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CrearEmpleados.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CrearEmpleados.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CrearEmpleados.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CrearEmpleados.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CrearEmpleados().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> generoCombo;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton5;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private javax.swing.JComboBox<String> jComboBox4;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -460,16 +559,21 @@ public class CrearEmpleados extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPasswordField jPasswordField2;
-    private javax.swing.JPasswordField jPasswordField4;
-    private javax.swing.JPasswordField jPasswordField5;
-    private javax.swing.JPasswordField jPasswordField6;
-    private javax.swing.JPasswordField jPasswordField7;
-    private javax.swing.JPasswordField jPasswordField8;
-    private javax.swing.JPasswordField jPasswordField9;
+    private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JSpinner jSpinner1;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField10;
+    private javax.swing.JTextField jTextField11;
+    private javax.swing.JTextField jTextField12;
+    private javax.swing.JTextField jTextField13;
+    private javax.swing.JTextField jTextField14;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField jTextField6;
+    private javax.swing.JTextField jTextField7;
+    private javax.swing.JTextField jTextField8;
+    private javax.swing.JComboBox<String> rolCombo;
     // End of variables declaration//GEN-END:variables
 }
