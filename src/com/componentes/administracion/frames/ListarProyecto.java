@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package com.componentes.administracion.frames;
-
+import com.componentes.administracion.controllers.ProyectoController;
 import com.componentes.administracion.controllers.ProyectoController;
 import com.componentes.ulatina.modelo.Empleado;
 import com.componentes.ulatina.modelo.Proyecto;
@@ -41,7 +41,7 @@ public class ListarProyecto extends javax.swing.JFrame {
         ArrayList<Object> nombresColumna = new ArrayList<Object>();
         ArrayList<Object[]> datos = new ArrayList<Object[]>();
         List<Proyecto> proyectos = new ArrayList<Proyecto>();
-        ProyectoController proyectoController = new ProyectoController();
+        ProyectoController poryectoController = new ProyectoController();
 
         nombresColumna.add("Id");
         nombresColumna.add("Nombre");
@@ -54,7 +54,7 @@ public class ListarProyecto extends javax.swing.JFrame {
         }
 
         this.jTable13.setModel(modeloTablaProyecto);
-        proyectos = proyectoController.listar(em);
+        proyectos = poryectoController.listar(em);
         for (Proyecto proyecto : proyectos) {
             String estado = new String();
             switch(proyecto.getEstado().getCodigoGeneral()){
@@ -430,7 +430,7 @@ public class ListarProyecto extends javax.swing.JFrame {
                         .addComponent(jButton39, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton40, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -548,15 +548,27 @@ public class ListarProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton11ActionPerformed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // TODO add your handling code here:
+        InicioSesion inicioSesion = new InicioSesion(this.em);
+        this.setVisible(false);
+        inicioSesion.setVisible(true);
     }//GEN-LAST:event_jButton12ActionPerformed
 
     private void jButton40ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton40ActionPerformed
-        // TODO add your handling code here:
+       CrearProyecto crearProyecto = new CrearProyecto(this.em,this.empleadoConectado, new Proyecto(), false);
+       this.setVisible(false);
+       crearProyecto.setVisible(true);
     }//GEN-LAST:event_jButton40ActionPerformed
 
     private void jButton39ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton39ActionPerformed
-        // TODO add your handling code here:
+          if (this.jTable13.getSelectedRow() != -1 && this.jTable13.getSelectedRow() > -1) {
+              int id = Integer.parseInt(String.valueOf(modeloTablaProyecto.getValueAt(this.jTable13.getSelectedRow(), 0)));
+              Proyecto proyecto = poryectoController.proyectoPorId(em, id);
+              CrearProyecto crearProyecto = new CrearProyecto(this.em,this.empleadoConectado, proyecto, true);
+              this.setVisible(false);
+              crearProyecto.setVisible(true);
+          }else {
+              JOptionPane.showMessageDialog(null, "Debes seleccionaer una fila.");
+          }
     }//GEN-LAST:event_jButton39ActionPerformed
 
     private void jButton41ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton41ActionPerformed
@@ -580,32 +592,7 @@ public class ListarProyecto extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ListarProyecto.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ListarProyecto.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ListarProyecto.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ListarProyecto.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
