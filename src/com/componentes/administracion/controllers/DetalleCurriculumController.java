@@ -92,16 +92,16 @@ public class DetalleCurriculumController implements Serializable {
         return detallesCurriculum;
     }
 
-    public List<DetalleCurriculum> listarPorEmpleado(EntityManager em, Curriculum curriculum) {
+    public List<DetalleCurriculum> listarPorCurriculum(EntityManager em, Curriculum curriculum) {
         List<DetalleCurriculum> detallesCurriculum = new ArrayList<DetalleCurriculum>();
         try {
             if(curriculum != null){
                 detallesCurriculum = sevicioDetalleCurriculum.listarPorCurriculum(em, curriculum);
-                if(detallesCurriculum != null && !detallesCurriculum.isEmpty()){
+                if(detallesCurriculum != null && detallesCurriculum.isEmpty()){
                     throw new Exception("ERROR - Detalles curriculum no ecnotrados");
                 }
             }else{
-                throw new Exception("ERROR - Empleado llegó nulo");
+                throw new Exception("ERROR - Curriculum llegó nulo");
             }
         } catch (Exception e) {
             e.printStackTrace();

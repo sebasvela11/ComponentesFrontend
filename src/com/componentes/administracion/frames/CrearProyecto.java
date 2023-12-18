@@ -12,6 +12,7 @@ import com.componentes.ulatina.modelo.Detalle;
 import com.componentes.ulatina.modelo.Empleado;
 import com.componentes.ulatina.modelo.Maestro;
 import com.componentes.ulatina.modelo.Proyecto;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -23,16 +24,17 @@ import javax.swing.table.DefaultTableModel;
  * @author isabella
  */
 public class CrearProyecto extends javax.swing.JFrame {
-     boolean editando;
-     Empleado empleadoConectado = new Empleado();
-     Proyecto proyecto = new Proyecto();
-     ProyectoController poryectoController = new ProyectoController();
-     DetalleController detalleController = new DetalleController();
-     MaestroController maestroController = new MaestroController();
-     EntityManager em;
-     List<Detalle> estados = new ArrayList<Detalle>();
-     
-    public CrearProyecto(EntityManager em, Empleado empleado, Proyecto proyecto, boolean editando ) {
+
+    boolean editando;
+    Empleado empleadoConectado = new Empleado();
+    Proyecto proyecto = new Proyecto();
+    ProyectoController poryectoController = new ProyectoController();
+    DetalleController detalleController = new DetalleController();
+    MaestroController maestroController = new MaestroController();
+    EntityManager em;
+    List<Detalle> estados = new ArrayList<Detalle>();
+
+    public CrearProyecto(EntityManager em, Empleado empleado, Proyecto proyecto, boolean editando) {
         this.editando = editando;
         this.em = em;
         this.empleadoConectado = empleado;
@@ -43,29 +45,27 @@ public class CrearProyecto extends javax.swing.JFrame {
         this.cargarDatos();
     }
 
-    
-    public void validarAccion(){
-        if (editando){
+    public void validarAccion() {
+        if (editando) {
             this.jLabel1.setText("Editar Proyecto");
             this.jButton5.setText("Guardar");
         }
     }
-    
-    public void cargarOpciones(){
+
+    public void cargarOpciones() {
         Maestro estado = new Maestro();
         estado = this.maestroController.maestroPorCodigoGeneral(em, "ESTADO_PROYECTO");
         estados = this.detalleController.listarPorMaestro(em, estado);
-       for (Detalle detalle : estados) {
-           this.Estado.addItem(detalle.getDescripcion());
-       }
+        for (Detalle detalle : estados) {
+            this.Estado.addItem(detalle.getDescripcion());
+        }
     }
-    
-    
-    public void cargarDatos()  {
+
+    public void cargarDatos() {
         if (editando) {
             this.NombreProyectotxt.setText(this.proyecto.getNombre());
             this.Descripciontxt.setText(this.proyecto.getDescripcion());
-            this.FechaIniciotxt.setText(proyecto.getFechaInicio().toString()); 
+            this.FechaIniciotxt.setText(proyecto.getFechaInicio().toString());
             this.FechaFinaltxt.setText(proyecto.getFechaFinal().toString());
             for (int i = 0; i < this.Estado.getItemCount(); i++) {
                 if (this.Estado.getItemAt(i).equals(this.proyecto.getEstado().getDescripcion())) {
@@ -75,15 +75,47 @@ public class CrearProyecto extends javax.swing.JFrame {
             }
         }
     }
-    
-   public void cargarCampos(){
-       
-   }
-   
-   public void guardarCambios(){
-       
-   }
-    
+
+    public Proyecto guardarCampos() {
+        Proyecto proyecto = new Proyecto();
+        proyecto.setNombre(this.NombreProyectotxt.getText());
+        proyecto.setDescripcion(this.Descripciontxt.getText());
+        proyecto.setFechaInicio(Date.valueOf(this.FechaIniciotxt.getText()));
+        proyecto.setFechaFinal(Date.valueOf(this.FechaFinaltxt.getText()));
+
+        for (Detalle detalle : estados) {
+            if (detalle.getDescripcion().equals(this.Estado.getSelectedItem().toString())) {
+                proyecto.setEstado(detalle);
+            }
+        }
+
+        return proyecto;
+    }
+
+    public void guardarCambios() {
+        this.proyecto.setNombre(this.NombreProyectotxt.getText());
+        this.proyecto.setDescripcion(this.Descripciontxt.getText());
+        this.proyecto.setFechaInicio(Date.valueOf(this.FechaIniciotxt.getText()));
+        this.proyecto.setFechaFinal(Date.valueOf(this.FechaFinaltxt.getText()));
+
+        for (Detalle detalle : estados) {
+            if (detalle.getDescripcion().equals(this.Estado.getSelectedItem().toString())) {
+                this.proyecto.setEstado(detalle);
+            }
+        }
+
+    }
+
+    public boolean validarInformacion() {
+        try {
+            Date date1 = Date.valueOf(this.FechaFinaltxt.getText());
+            Date date2 = Date.valueOf(this.FechaIniciotxt.getText());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -263,15 +295,14 @@ public class CrearProyecto extends javax.swing.JFrame {
                     .addComponent(jLabel12)
                     .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
-                        .addComponent(Estado, 0, 385, Short.MAX_VALUE)
-                        .addComponent(FechaIniciotxt))
-                    .addComponent(FechaFinaltxt, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
-                    .addComponent(NombreProyectotxt, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
-                    .addComponent(Descripciontxt))
-                .addContainerGap())
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(Descripciontxt, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(FechaFinaltxt, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
+                    .addComponent(Estado, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(FechaIniciotxt, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(NombreProyectotxt))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -311,9 +342,7 @@ public class CrearProyecto extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -329,14 +358,17 @@ public class CrearProyecto extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 325, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 325, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
@@ -344,29 +376,38 @@ public class CrearProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-       ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado) ;  
-       if (editando) {
-           if (!this.NombreProyectotxt.getText().isEmpty()) {
-              // this.guardarCambios();
-               this.poryectoController.modificar(em, this.proyecto);
-               JOptionPane.showMessageDialog(null, "Se han guardado los cambios.");
-           }else{
-               JOptionPane.showMessageDialog(null, "Debe llenar todos los campos.");
-               return;
-           }
-       } else{
-           if (!this.NombreProyectotxt.getText().isEmpty()) {
-               this.poryectoController.insertar(em, this.proyecto);
-               JOptionPane.showMessageDialog(null, "Se ha guardado el proyecto.");
-           } else{
-               JOptionPane.showMessageDialog(null, "Debe llenar todos los campos." );
-               return;
+        ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado);
+        if (editando) {
+            if (!this.NombreProyectotxt.getText().isEmpty() && this.validarInformacion()) {
+                this.guardarCambios();
+                this.poryectoController.modificar(em, this.proyecto);
+                JOptionPane.showMessageDialog(null, "Se han guardado los cambios.");
+            } else {
+                if (this.validarInformacion()) {
+                    JOptionPane.showMessageDialog(null, "Los campos no deben estar vaciós");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Campos no validos");
+                }
+                return;
             }
-       }
-       listarProyecto.modeloTablaProyecto = new DefaultTableModel();
-       listarProyecto.cargarTabla();
-       listarProyecto.setVisible(true);
-       this.dispose();
+        } else {
+            if (!this.NombreProyectotxt.getText().isEmpty() && this.validarInformacion()) {
+                this.poryectoController.insertar(em, this.guardarCampos());
+                JOptionPane.showMessageDialog(null, "Se ha guardado el proyecto.");
+            } else {
+                if (this.validarInformacion()) {
+                    JOptionPane.showMessageDialog(null, "Los campos no deben estar vaciós");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Campos no validos");
+
+                }
+                return;
+            }
+        }
+        listarProyecto.modeloTablaProyecto = new DefaultTableModel();
+        listarProyecto.cargarTabla();
+        listarProyecto.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jPasswordField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField5ActionPerformed
@@ -402,17 +443,16 @@ public class CrearProyecto extends javax.swing.JFrame {
     }//GEN-LAST:event_NombreProyectotxtActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-      ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado);
-      listarProyecto.modeloTablaProyecto = new DefaultTableModel();
-      listarProyecto.cargarTabla();
-      listarProyecto.setVisible(true);
-      this.dispose();
+        ListarProyecto listarProyecto = new ListarProyecto(this.em, this.empleadoConectado);
+        listarProyecto.modeloTablaProyecto = new DefaultTableModel();
+        listarProyecto.cargarTabla();
+        listarProyecto.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
      */
-   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField Descripciontxt;

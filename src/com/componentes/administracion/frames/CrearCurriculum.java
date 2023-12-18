@@ -133,7 +133,7 @@ public class CrearCurriculum extends javax.swing.JFrame {
         this.horarioController.insertar(em, this.horario);
         this.curriculum.setEmpleado(empleadoInsertado);
         this.curriculumController.insertar(em, curriculum);
-        Curriculum curriculumInsertado = this.curriculumController.listarPorEmpleado(em, empleadoInsertado);
+        Curriculum curriculumInsertado = this.curriculumController.curriculumPorEmpleado(em, empleadoInsertado);
         for (int i = 0; i < this.jTable13.getRowCount(); i++) {
             DetalleCurriculum detalleCurriculum = new DetalleCurriculum();
             detalleCurriculum.setCurriculum(curriculumInsertado);

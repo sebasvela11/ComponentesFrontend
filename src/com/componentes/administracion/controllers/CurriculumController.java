@@ -64,7 +64,7 @@ public class CurriculumController implements Serializable{
         return curriculum;
     }
     
-    public Curriculum listarPorEmpleado(EntityManager em, Empleado empleado) {
+    public Curriculum curriculumPorEmpleado(EntityManager em, Empleado empleado) {
         Curriculum curriculum = new Curriculum();
         try {
             if(empleado != null){

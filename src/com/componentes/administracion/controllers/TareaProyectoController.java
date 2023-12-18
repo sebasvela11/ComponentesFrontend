@@ -49,6 +49,18 @@ public class TareaProyectoController implements Serializable{
             e.printStackTrace();
         }
     }
+    
+    public void eliminar(EntityManager em, TareaProyecto tareaProyecto) {
+        try {
+            if (tareaProyecto != null) {
+                servicioTareaProyecto.eliminar(em, tareaProyecto);
+            } else {
+                throw new Exception("ERROR - Tarea proyecto llegó nulo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public TareaProyecto tareaProyectoPorId(EntityManager em, int id) {
         TareaProyecto tareaProyecto = new TareaProyecto();
